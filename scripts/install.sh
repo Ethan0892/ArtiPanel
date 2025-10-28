@@ -232,11 +232,13 @@ setup_artipanel() {
     print_success "Backend dependencies installed (production only)"
     cd ..
 
-    # Install frontend dependencies (production only)
+    # Install frontend dependencies and build
     print_info "Installing frontend dependencies..."
     cd frontend
-    npm install --production --omit=dev
+    npm install
     npm run build
+    # Remove devDependencies after build
+    npm prune --production
     print_success "Frontend built for production"
     cd ..
 }
