@@ -75,11 +75,13 @@ check_system() {
         print_success "Available memory: ${MEMORY}GB"
     fi
 
-    # Check disk space
+    # Check disk space (lightweight: 5GB minimum)
     DISK=$(df / | awk 'NR==2 {print int($4/1024/1024)}')
-    if [ "$DISK" -lt 20 ]; then
-        print_error "Insufficient disk space: ${DISK}GB (required: 20GB+)"
+    if [ "$DISK" -lt 5 ]; then
+        print_error "Insufficient disk space: ${DISK}GB (required: 5GB+ for lightweight setup)"
         exit 1
+    elif [ "$DISK" -lt 10 ]; then
+        print_warning "Low disk space: ${DISK}GB (recommended: 10GB+)"
     fi
     print_success "Available disk space: ${DISK}GB"
 }
@@ -216,28 +218,26 @@ setup_artipanel() {
         print_success ".env file already exists"
     fi
 
-    # Create required directories
+    # Create required directories (minimal)
     print_info "Creating required directories..."
-    mkdir -p data/postgresql
-    mkdir -p data/redis
     mkdir -p logs
     mkdir -p backups
-    chmod 755 data logs backups
+    chmod 755 logs backups
     print_success "Directories created"
 
-    # Install backend dependencies
+    # Install backend dependencies (production only)
     print_info "Installing backend dependencies..."
     cd backend
-    npm install --production
-    print_success "Backend dependencies installed"
+    npm install --production --omit=dev
+    print_success "Backend dependencies installed (production only)"
     cd ..
 
-    # Install frontend dependencies
+    # Install frontend dependencies (production only)
     print_info "Installing frontend dependencies..."
     cd frontend
-    npm install --production
+    npm install --production --omit=dev
     npm run build
-    print_success "Frontend dependencies installed and built"
+    print_success "Frontend built for production"
     cd ..
 }
 

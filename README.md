@@ -175,8 +175,9 @@ ArtiPanel/
 - Linux server (Ubuntu 20.04+, Debian 11+, CentOS 8+)
 - Docker & Docker Compose
 - Node.js 18+
-- PostgreSQL 12+
-- 2GB+ RAM, 20GB+ storage
+- PostgreSQL 12+ (or use Docker)
+- **Lightweight**: 1GB+ RAM, 5GB+ storage
+- **Production**: 2GB+ RAM, 20GB+ storage
 
 ### Installation
 
