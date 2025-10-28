@@ -65,23 +65,25 @@ export function getCurrentVersion(): string {
  */
 export async function checkForUpdates(channel: 'stable' | 'beta' | 'dev' = 'stable'): Promise<VersionInfo | null> {
   try {
-    // In production, fetch from actual update server
-    // For now, return mock data structure
-    const mockLatestVersion = '1.1.0';
-    const mockReleaseDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const updateServerUrl = process.env.UPDATE_SERVER_URL;
+    if (!updateServerUrl) {
+      logger.warn('UPDATE_SERVER_URL not configured, update checking disabled');
+      return null;
+    }
 
-    return {
-      current: getCurrentVersion(),
-      latest: mockLatestVersion,
-      channel,
-      releaseDate: mockReleaseDate,
-      changelog: `
-        - Added enhanced security features
-        - Improved performance by 20%
-        - Fixed critical vulnerabilities
-        - Updated dependencies
-      `,
-    };
+    // Fetch from actual update server using configured URL
+    const response = await fetch(`${updateServerUrl}/check?channel=${channel}&current=${getCurrentVersion()}`, {
+      timeout: 10000,
+      headers: { 'User-Agent': `ArtiPanel/${getCurrentVersion()}` }
+    });
+
+    if (!response.ok) {
+      logger.warn(`Update server returned ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json() as VersionInfo;
+    return data;
   } catch (error) {
     console.error(`Failed to check for updates: ${error}`);
     return null;
@@ -133,10 +135,19 @@ export async function downloadUpdate(manifest: UpdateManifest, onProgress?: (pro
       });
     }
 
-    // In production, use axios or similar to download the file
-    // For now, create a mock update package
-    const mockPackageContent = JSON.stringify({ version: manifest.version, timestamp: Date.now() });
-    fs.writeFileSync(updatePath, mockPackageContent);
+    // Download the update package from the update server
+    const downloadUrl = process.env.UPDATE_SERVER_DOWNLOAD_URL || manifest.downloadUrl;
+    if (!downloadUrl) {
+      throw new Error('No download URL available for update');
+    }
+
+    const response = await fetch(downloadUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download update: ${response.statusText}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    fs.writeFileSync(updatePath, Buffer.from(buffer));
 
     if (onProgress) {
       onProgress({
