@@ -7,6 +7,18 @@ export class ApiError extends Error {
     super(message);
     this.name = 'ApiError';
   }
+
+  isAuthenticationError(): boolean {
+    return this.status === 401 || this.status === 403;
+  }
+
+  get errorCode(): string {
+    return this.data?.code || 'UNKNOWN_ERROR';
+  }
+
+  get statusCode(): number {
+    return this.status;
+  }
 }
 
 export class ApiErrorHandler {
@@ -28,5 +40,27 @@ export class ApiErrorHandler {
     }
 
     return new ApiError(0, error.message || 'Unknown error', error);
+  }
+
+  static async retryWithBackoff(
+    fn: () => Promise<any>,
+    maxRetries: number = 3,
+    initialDelay: number = 1000
+  ): Promise<any> {
+    let lastError: any;
+    
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        if (i < maxRetries - 1) {
+          const delay = initialDelay * Math.pow(2, i);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    throw lastError;
   }
 }
