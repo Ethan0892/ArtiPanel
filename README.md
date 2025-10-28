@@ -72,12 +72,10 @@ ArtiPanel/
 │   ├── nas-sync/
 │   └── example-plugin/
 │
-├── examples/                   # Configuration examples
-│   ├── docker-compose.yml
-│   └── environment.sample
-│
-└── .github/
-    └── copilot-instructions.md
+└── examples/                   # Configuration examples
+    ├── docker-compose.yml
+    └── environment.sample
+
 ```
 
 ## Core Modules
