@@ -1,0 +1,121 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: artipanel-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-artipanel}
+      POSTGRES_USER: ${DB_USER:-artipanel}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeMe123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-artipanel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - artipanel-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: artipanel-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - artipanel-network
+
+  # Backend API Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: artipanel-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-4000}
+      DATABASE_URL: postgresql://${DB_USER:-artipanel}:${DB_PASSWORD:-changeMe123}@postgres:5432/${DB_NAME:-artipanel}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
+      API_URL: ${API_URL:-http://localhost:4000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - ./backend/src:/app/src
+      - ./logs:/app/logs
+    ports:
+      - "${PORT:-4000}:4000"
+    restart: unless-stopped
+    networks:
+      - artipanel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Web UI
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: artipanel-frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: ${API_URL:-http://localhost:4000/api}
+      VITE_WS_URL: ${FRONTEND_URL:-http://localhost:3000}
+    volumes:
+      - ./frontend/src:/app/src
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - artipanel-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: artipanel-nginx
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - nginx_logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - artipanel-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  nginx_logs:
+
+networks:
+  artipanel-network:
+    driver: bridge
