@@ -228,7 +228,7 @@ setup_artipanel() {
     # Install backend dependencies (production only)
     print_info "Installing backend dependencies..."
     cd backend
-    npm install --production --omit=dev
+    npm install --omit=dev
     print_success "Backend dependencies installed (production only)"
     cd ..
 
@@ -237,8 +237,6 @@ setup_artipanel() {
     cd frontend
     npm install
     npm run build
-    # Remove devDependencies after build
-    npm prune --production
     print_success "Frontend built for production"
     cd ..
 }
