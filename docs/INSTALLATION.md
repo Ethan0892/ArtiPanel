@@ -55,7 +55,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 ### 2. Clone Repository
 
 ```bash
-git clone https://github.com/ArtisanTech/ArtiPanel.git
+git clone https://github.com/Ethan0892/ArtiPanel.git
 cd ArtiPanel
 ```
 
