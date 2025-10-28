@@ -180,29 +180,43 @@ ArtiPanel/
 
 ### Installation
 
+**Quick Start (Docker Compose - Recommended)**:
+
 ```bash
 # Clone repository
-git clone https://github.com/ArtisanTech/ArtiPanel.git
+git clone https://github.com/Ethan0892/ArtiPanel.git
 cd ArtiPanel
 
-# Run installer
-chmod +x scripts/install.sh
-sudo ./scripts/install.sh
+# Copy environment template
+cp examples/environment.sample .env
+nano .env
 
-# Start with Docker Compose
+# Start services
 docker-compose up -d
 
 # Access panel
-# Frontend: http://your-server:3000
-# API: http://your-server:4000/api
+# Frontend: http://localhost:3000
+# API: http://localhost:4000/api
 ```
 
-### Environment Setup
+**Automated Installation (Linux/macOS)**:
 
 ```bash
-cp examples/environment.sample .env
-# Edit .env with your settings
+# Clone repository
+git clone https://github.com/Ethan0892/ArtiPanel.git
+cd ArtiPanel
+
+# Run installer
+sudo chmod +x scripts/install.sh
+sudo ./scripts/install.sh
 ```
+
+**For detailed setup instructions**, see [docs/SETUP.md](./docs/SETUP.md) which includes:
+- System requirements for all platforms
+- 3 installation methods (Docker, Script, Manual)
+- Complete configuration guide
+- Troubleshooting and verification steps
+- Production checklist
 
 ## Development
 
