@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { applyTheme, getSavedTheme, AVAILABLE_THEMES } from '../config/themes';
 import { shortcutManager } from '../utils/shortcuts';
+import { ErrorBoundary } from './ErrorBoundary';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ContentArea from './ContentArea';
@@ -87,7 +88,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
           />
 
           {/* Content */}
-          <ContentArea currentPage={currentPage} />
+          <ErrorBoundary>
+            <ContentArea currentPage={currentPage} />
+          </ErrorBoundary>
         </div>
 
         {/* Theme Selector Modal */}
@@ -105,7 +108,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
       </div>
 
       {/* Styles */}
-      <style jsx>{`
+      <style>{`
         .artipanel-dashboard {
           background-color: var(--color-background);
           color: var(--color-text);

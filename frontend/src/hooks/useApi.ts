@@ -4,12 +4,12 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '../services/apiClient';
+import { apiClient, ApiError } from '../services/api';
 
 interface UseFetchState<T> {
   data: T | null;
   loading: boolean;
-  error: Error | null;
+  error: ApiError | null;
   refetch: () => Promise<void>;
 }
 
@@ -22,7 +22,7 @@ export function useFetch<T>(
 ): UseFetchState<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(!options?.skip);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   const fetchData = useCallback(async () => {
     if (options?.skip) return;
@@ -33,7 +33,8 @@ export function useFetch<T>(
       const result = await apiClient.get<T>(url);
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const apiError = err instanceof Error ? (err as ApiError) : new Error('Unknown error') as ApiError;
+      setError(apiError);
     } finally {
       setLoading(false);
     }
@@ -154,19 +155,16 @@ export function useCurrentUser() {
   return useFetch('/auth/me');
 }
 
-/**
- * Generic mutation hook for POST/PUT/DELETE operations
- */
 interface UseMutationState<T> {
   data: T | null;
   loading: boolean;
-  error: Error | null;
+  error: ApiError | null;
 }
 
 export function useMutation<T>(
   method: 'post' | 'put' | 'patch' | 'delete',
   onSuccess?: (data: T) => void,
-  onError?: (error: Error) => void
+  onError?: (error: ApiError) => void
 ) {
   const [state, setState] = useState<UseMutationState<T>>({
     data: null,
@@ -199,7 +197,7 @@ export function useMutation<T>(
         onSuccess?.(result);
         return result;
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
+        const error = err instanceof Error ? (err as ApiError) : new Error('Unknown error') as ApiError;
         setState({ data: null, loading: false, error });
         onError?.(error);
         return null;
