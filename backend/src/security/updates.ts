@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { execSync } from 'child_process';
+import logger from '../utils/logger';
 
 export interface VersionInfo {
   current: string;
@@ -73,9 +74,8 @@ export async function checkForUpdates(channel: 'stable' | 'beta' | 'dev' = 'stab
 
     // Fetch from actual update server using configured URL
     const response = await fetch(`${updateServerUrl}/check?channel=${channel}&current=${getCurrentVersion()}`, {
-      timeout: 10000,
       headers: { 'User-Agent': `ArtiPanel/${getCurrentVersion()}` }
-    });
+    } as any);
 
     if (!response.ok) {
       logger.warn(`Update server returned ${response.status}`);

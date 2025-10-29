@@ -10,6 +10,9 @@ export * as updates from './updates';
 export * as auditLog from './auditLog';
 export * as rateLimiting from './rateLimiting';
 
+import * as auditLog from './auditLog';
+import * as rateLimiting from './rateLimiting';
+
 /**
  * Initialize all security systems
  */

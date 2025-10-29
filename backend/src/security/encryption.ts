@@ -103,7 +103,7 @@ export function decrypt(encryptedData: EncryptedData, masterKey: string | Buffer
 
     // Decrypt data
     let plaintext = decipher.update(ciphertext, 'hex', 'utf8');
-    plaintext += decipher.final('utf8');
+    plaintext += decipher.final('utf8') as any;
 
     return {
       success: true,
