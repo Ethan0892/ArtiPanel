@@ -1,33 +1,33 @@
 services:
-  # PostgreSQL Database - Alpine for minimal footprint
-  postgres:
-    image: postgres:15-alpine
-    container_name: artipanel-postgres
-    environment:
-      POSTGRES_DB: ${DB_NAME:-artipanel}
-      POSTGRES_USER: ${DB_USER:-artipanel}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeMe123}
-      POSTGRES_INITDB_ARGS: "-c shared_buffers=128MB -c max_connections=50"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT:-5433}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-artipanel}"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
-    restart: unless-stopped
-    networks:
-      - artipanel-network
-    # Memory limit for lightweight setup
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
+  # PostgreSQL Database - Using host PostgreSQL (already installed)
+  # Uncomment the section below if you want to use Docker PostgreSQL instead
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: artipanel-postgres
+  #   environment:
+  #     POSTGRES_DB: ${DB_NAME:-artipanel}
+  #     POSTGRES_USER: ${DB_USER:-artipanel}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD:-changeMe123}
+  #     POSTGRES_INITDB_ARGS: "-c shared_buffers=128MB -c max_connections=50"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "${DB_PORT:-5433}:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-artipanel}"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 30s
+  #   restart: unless-stopped
+  #   networks:
+  #     - artipanel-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #       reservations:
+  #         memory: 128M
 
   # Redis Cache - Minimal memory configuration
   redis:
@@ -63,14 +63,12 @@ services:
         NODE_ENV: production
     container_name: artipanel-api
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: ${PORT:-4000}
-      DATABASE_URL: postgresql://${DB_USER:-artipanel}:${DB_PASSWORD:-changeMe123}@postgres:5432/${DB_NAME:-artipanel}
+      DATABASE_URL: postgresql://${DB_USER:-artipanel}:${DB_PASSWORD:-changeMe123}@host.docker.internal:5432/${DB_NAME:-artipanel}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
       API_URL: ${API_URL:-http://localhost:4000}
@@ -82,6 +80,8 @@ services:
     restart: unless-stopped
     networks:
       - artipanel-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
       interval: 30s
@@ -125,8 +125,6 @@ services:
 # Otherwise, frontend and backend are directly accessible
 
 volumes:
-  postgres_data:
-    driver: local
   redis_data:
     driver: local
 
