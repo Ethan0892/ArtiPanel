@@ -4,39 +4,40 @@
  * Manage and monitor game/application servers
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useValidatedList, useValidatedMutation } from '../../hooks/useValidatedApi';
+import { ServerSchema } from '../../utils/validation';
+import { ErrorDisplay, LoadingSkeleton } from '../ErrorBoundary';
 
 interface ServersPageProps {
   mode?: 'list' | 'create';
 }
 
 const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
-  const [servers, setServers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: listResponse, loading, error, refetch } = useValidatedList(
+    '/servers',
+    ServerSchema,
+    { refetchInterval: 30000 }
+  );
 
-  useEffect(() => {
-    if (mode === 'list') {
-      fetchServers();
-    }
-  }, [mode]);
+  const { execute: createServer, loading: creating, error: createError } =
+    useValidatedMutation('POST', ServerSchema);
 
-  const fetchServers = async () => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const res = await fetch('/api/servers');
-      // const data = await res.json();
-      // setServers(data);
-      setServers([]);
-    } catch (error) {
-      console.error('Error fetching servers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [showCreateForm, setShowCreateForm] = useState(mode === 'create');
+  const [createError2, setCreateError2] = useState<Error | null>(null);
+  const [newServer, setNewServer] = useState({
+    name: '',
+    host: '',
+    port: 3000,
+    username: '',
+    password: '',
+  });
+
+  const servers = listResponse?.data || [];
 
   return (
     <div className="page-container">
-      <style jsx>{`
+      <style>{`
         .page-container {
           flex: 1;
           overflow-y: auto;
@@ -171,6 +172,7 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
           <div className="page-header">
             <h1 className="page-title">Create Server</h1>
           </div>
+          {createError && <ErrorDisplay error={createError} onDismiss={() => setCreateError2(null)} />}
           <div style={{ background: 'var(--color-surface)', padding: '24px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
               Server creation form and configuration will be implemented here.
@@ -186,7 +188,9 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
                   <option>Select a node</option>
                 </select>
               </div>
-              <button type="button" className="btn btn-primary">Create Server</button>
+              <button type="button" className="btn btn-primary" disabled={creating}>
+                {creating ? 'Creating...' : 'Create Server'}
+              </button>
             </form>
           </div>
         </>
@@ -196,14 +200,14 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
             <h1 className="page-title">Servers</h1>
             <div className="header-actions">
               <button className="btn btn-primary">Create Server</button>
-              <button className="btn btn-secondary">Refresh</button>
+              <button className="btn btn-secondary" onClick={() => refetch()}>Refresh</button>
             </div>
           </div>
 
+          {error && <ErrorDisplay error={error} onDismiss={() => setCreateError2(null)} />}
+
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--color-text-secondary)' }}>Loading servers...</p>
-            </div>
+            <LoadingSkeleton count={3} />
           ) : servers.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">[S]</div>
