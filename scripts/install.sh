@@ -252,6 +252,9 @@ start_services() {
         export DB_PORT=5433
     fi
 
+    # Clean up any failed postgres container state
+    docker-compose down 2>/dev/null || true
+    
     print_info "Starting Docker Compose services..."
     docker-compose up -d
 
