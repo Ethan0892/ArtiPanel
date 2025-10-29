@@ -245,6 +245,13 @@ setup_artipanel() {
 start_services() {
     print_header "Starting ArtiPanel Services"
 
+    # Check if port 5432 is in use (local PostgreSQL)
+    if netstat -tuln 2>/dev/null | grep -q ':5432 '; then
+        print_warning "Port 5432 is in use (local PostgreSQL detected)"
+        print_info "Using Docker PostgreSQL on port 5433 instead"
+        export DB_PORT=5433
+    fi
+
     print_info "Starting Docker Compose services..."
     docker-compose up -d
 
@@ -273,7 +280,7 @@ print_access_info() {
     echo -e "${BLUE}Access Information:${NC}"
     echo -e "  Frontend: ${GREEN}http://localhost:3000${NC}"
     echo -e "  API:      ${GREEN}http://localhost:4000/api${NC}"
-    echo -e "  Database: ${GREEN}localhost:5432${NC}"
+    echo -e "  Database: ${GREEN}localhost:${DB_PORT:-5433}${NC} (Docker PostgreSQL)"
     echo ""
     echo -e "${BLUE}Next Steps:${NC}"
     echo "  1. Open http://localhost:3000 in your browser"
