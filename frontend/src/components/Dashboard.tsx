@@ -21,6 +21,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentTheme, setCurrentTheme] = useState(getSavedTheme());
   const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
   // Initialize keyboard shortcuts and theme
   useEffect(() => {
@@ -74,6 +75,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
         <Sidebar 
           isOpen={sidebarOpen} 
           onToggle={() => setSidebarOpen(!sidebarOpen)}
+          onPageSelect={setCurrentPage}
         />
 
         {/* Main Content Area */}
@@ -85,7 +87,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
           />
 
           {/* Content */}
-          <ContentArea />
+          <ContentArea currentPage={currentPage} />
         </div>
 
         {/* Theme Selector Modal */}

@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  onPageSelect: (pageId: string) => void;
 }
 
 interface NavItem {
@@ -19,7 +20,7 @@ interface NavItem {
   subItems?: NavItem[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onPageSelect }) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['servers']));
 
   const navItems: NavItem[] = [
@@ -97,8 +98,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     <div key={item.id}>
       <div
         className="nav-item"
-        onClick={() => item.subItems && toggleExpand(item.id)}
-        style={{ paddingLeft: `${level * 12}px` }}
+        onClick={() => {
+          onPageSelect(item.id);
+          if (item.subItems) {
+            toggleExpand(item.id);
+          }
+        }}
+        style={{ paddingLeft: `${level * 12}px`, cursor: 'pointer' }}
       >
         <span className="nav-icon">{item.icon}</span>
         <span className="nav-label">{item.label}</span>
