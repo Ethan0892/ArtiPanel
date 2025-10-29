@@ -8,17 +8,13 @@ import React, { useState } from 'react';
 
 const ContentArea: React.FC = () => {
   const [stats] = useState({
-    servers: 12,
-    nodes: 3,
-    uptime: '99.9%',
-    bandwidth: '2.4TB/month',
+    servers: 0,
+    nodes: 0,
+    uptime: '--',
+    bandwidth: '--',
   });
 
-  const recentActivity = [
-    { id: 1, type: 'server_created', message: 'Created Survival Server', time: '5m ago' },
-    { id: 2, type: 'node_online', message: 'Node US-West came online', time: '1h ago' },
-    { id: 3, type: 'backup_completed', message: 'Weekly backup completed', time: '3h ago' },
-  ];
+  const recentActivity: any[] = [];
 
   return (
     <div className="content-area">
