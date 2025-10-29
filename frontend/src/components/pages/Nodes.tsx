@@ -1,638 +1,229 @@
 /**
- * Nodes Management Page
- * Display and manage distributed game server nodes
+ * Nodes Page
+ * 
+ * Manage and monitor compute nodes
  */
 
-import React, { useState } from 'react';
-import { useNodes } from '../hooks/useApi';
+import React, { useState, useEffect } from 'react';
 
-const Nodes: React.FC = () => {
-  const { data: nodes, loading, error, refetch } = useNodes();
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+interface NodesPageProps {
+  mode?: 'list' | 'add';
+}
 
-  if (loading) {
-    return (
-      <div className="nodes-page">
-        <div className="loading">
-          <div className="spinner"></div>
-          <p>Loading nodes...</p>
-        </div>
-      </div>
-    );
-  }
+const Nodes: React.FC<NodesPageProps> = ({ mode = 'list' }) => {
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (error) {
-    return (
-      <div className="nodes-page">
-        <div className="error">
-          <p>Error loading nodes: {error.message}</p>
-          <button onClick={() => refetch()}>Retry</button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (mode === 'list') {
+      fetchNodes();
+    }
+  }, [mode]);
+
+  const fetchNodes = async () => {
+    try {
+      // TODO: Replace with actual API endpoint
+      // const res = await fetch('/api/nodes');
+      // const data = await res.json();
+      // setNodes(data);
+      setNodes([]);
+    } catch (error) {
+      console.error('Error fetching nodes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="nodes-page">
-      <div className="page-header">
-        <h1>🌐 Nodes</h1>
-        <button
-          className="btn-primary"
-          onClick={() => setShowCreateForm(true)}
-          title="Ctrl+D"
-        >
-          ➕ Add Node
-        </button>
-      </div>
-
-      {showCreateForm && (
-        <div className="create-form-panel">
-          <h2>Add New Node</h2>
-          <form className="node-form">
-            <div className="form-row">
-              <div className="form-group">
-                <label>Node Name</label>
-                <input type="text" placeholder="e.g., US-Node-01" />
-              </div>
-
-              <div className="form-group">
-                <label>Location</label>
-                <select>
-                  <option>United States (NY)</option>
-                  <option>Europe (DE)</option>
-                  <option>Asia (SG)</option>
-                  <option>Australia (SY)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>FQDN / Hostname</label>
-              <input type="text" placeholder="node1.example.com" />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Scheme</label>
-                <select>
-                  <option>https</option>
-                  <option>http</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Port</label>
-                <input type="number" defaultValue="8080" />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>API Key</label>
-              <input
-                type="password"
-                placeholder="Paste your Pterodactyl API key"
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Total Memory (MB)</label>
-                <input type="number" defaultValue="32768" />
-              </div>
-
-              <div className="form-group">
-                <label>Memory Overallocate (%)</label>
-                <input type="number" defaultValue="0" />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Total Disk (MB)</label>
-                <input type="number" defaultValue="1048576" />
-              </div>
-
-              <div className="form-group">
-                <label>Disk Overallocate (%)</label>
-                <input type="number" defaultValue="0" />
-              </div>
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn-primary">
-                Add Node
-              </button>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setShowCreateForm(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <div className="nodes-grid">
-        {nodes && Array.isArray(nodes) && nodes.length > 0 ? (
-          nodes.map((node: any) => (
-            <div
-              key={node.id}
-              className={`node-card ${node.status}`}
-              onClick={() => setSelectedNodeId(node.id)}
-            >
-              <div className="card-header">
-                <h3>{node.name}</h3>
-                <span className={`status-indicator ${node.status}`}></span>
-              </div>
-
-              <div className="card-meta">
-                <p className="location">📍 {node.location}</p>
-                <p className="fqdn">{node.fqdn}</p>
-              </div>
-
-              <div className="card-stats">
-                <div className="stat">
-                  <span className="stat-label">Memory</span>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{ width: '65%' }}
-                    ></div>
-                  </div>
-                  <span className="stat-value">20.5GB / 32GB</span>
-                </div>
-
-                <div className="stat">
-                  <span className="stat-label">Disk</span>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{ width: '42%' }}
-                    ></div>
-                  </div>
-                  <span className="stat-value">440GB / 1TB</span>
-                </div>
-
-                <div className="stat">
-                  <span className="stat-label">Servers</span>
-                  <span className="stat-value">12 / 100</span>
-                </div>
-              </div>
-
-              <div className="card-actions">
-                <button className="btn-small">👁️ View</button>
-                <button className="btn-small">✏️ Edit</button>
-                <button className="btn-small btn-danger">🗑️ Remove</button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="empty-state">
-            <p>No nodes configured</p>
-            <button
-              className="btn-primary"
-              onClick={() => setShowCreateForm(true)}
-            >
-              Add Your First Node
-            </button>
-          </div>
-        )}
-      </div>
-
-      {selectedNodeId && (
-        <div className="node-detail-panel">
-          <div className="detail-header">
-            <h2>Node Details</h2>
-            <button onClick={() => setSelectedNodeId(null)}>✕</button>
-          </div>
-
-          <div className="detail-content">
-            <div className="detail-section">
-              <h3>Node Information</h3>
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <span className="label">Status:</span>
-                  <span className="value">🟢 Online</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Uptime:</span>
-                  <span className="value">45 days 12h</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Last Check:</span>
-                  <span className="value">2 minutes ago</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="detail-section">
-              <h3>Resource Allocation</h3>
-              <div className="detail-item full">
-                <span className="label">Memory</span>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: '65%' }}></div>
-                </div>
-                <span className="stat-value">20.5GB / 32GB (65%)</span>
-              </div>
-
-              <div className="detail-item full">
-                <span className="label">Disk</span>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: '42%' }}></div>
-                </div>
-                <span className="stat-value">440GB / 1TB (42%)</span>
-              </div>
-            </div>
-
-            <div className="detail-section">
-              <h3>Allocations</h3>
-              <div className="allocations-list">
-                <div className="allocation-item">
-                  <span className="port">25565</span>
-                  <span className="status">assigned</span>
-                </div>
-                <div className="allocation-item">
-                  <span className="port">25566</span>
-                  <span className="status">available</span>
-                </div>
-                <div className="allocation-item">
-                  <span className="port">25567</span>
-                  <span className="status">available</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="detail-section">
-              <h3>Actions</h3>
-              <div className="btn-group">
-                <button className="btn-secondary">🔍 Test Connection</button>
-                <button className="btn-secondary">⚙️ Configure</button>
-                <button className="btn-danger">🔄 Reboot Node</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        .nodes-page {
-          padding: 20px;
+    <div className="page-container">
+      <style jsx>{`
+        .page-container {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px;
+          background-color: var(--color-background);
         }
 
         .page-header {
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px;
-        }
-
-        .page-header h1 {
-          font-size: 28px;
-          color: var(--color-text);
-          margin: 0;
-        }
-
-        .nodes-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 20px;
-          margin-top: 20px;
-        }
-
-        .node-card {
-          background: var(--color-surface);
-          border-radius: 8px;
-          padding: 16px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          border: 2px solid transparent;
-        }
-
-        .node-card:hover {
-          border-color: var(--color-primary);
-          transform: translateY(-4px);
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .card-header {
-          display: flex;
           justify-content: space-between;
-          align-items: center;
-          margin-bottom: 12px;
+          margin-bottom: 32px;
         }
 
-        .card-header h3 {
-          margin: 0;
-          color: var(--color-text);
-          font-size: 16px;
-        }
-
-        .status-indicator {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          animation: pulse 2s infinite;
-        }
-
-        .status-indicator.online {
-          background: var(--color-success);
-        }
-
-        .status-indicator.offline {
-          background: var(--color-error);
-        }
-
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-
-        .card-meta {
-          margin-bottom: 16px;
-        }
-
-        .card-meta p {
-          margin: 4px 0;
-          font-size: 13px;
-          color: var(--color-text-secondary);
-        }
-
-        .card-stats {
-          margin-bottom: 16px;
-          padding: 12px 0;
-          border-top: 1px solid var(--color-border);
-          border-bottom: 1px solid var(--color-border);
-        }
-
-        .stat {
-          margin-bottom: 12px;
-        }
-
-        .stat-label {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--color-text-secondary);
-        }
-
-        .progress-bar {
-          height: 6px;
-          background: var(--color-background);
-          border-radius: 3px;
-          margin: 4px 0;
-          overflow: hidden;
-        }
-
-        .progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-          transition: width 0.3s ease;
-        }
-
-        .stat-value {
-          font-size: 12px;
-          color: var(--color-text);
-          font-weight: 500;
-        }
-
-        .card-actions {
-          display: flex;
-          gap: 8px;
-        }
-
-        .btn-small {
-          flex: 1;
-          padding: 8px;
-          border: none;
-          border-radius: 4px;
-          background: var(--color-background);
-          color: var(--color-text);
-          cursor: pointer;
-          font-size: 12px;
-          transition: all 0.2s;
-          border: 1px solid var(--color-border);
-        }
-
-        .btn-small:hover {
-          background: var(--color-primary);
-          color: white;
-          border-color: var(--color-primary);
-        }
-
-        .btn-danger {
-          background: var(--color-error);
-          color: white;
-          border-color: var(--color-error);
-        }
-
-        .create-form-panel {
-          background: var(--color-surface);
-          border-radius: 8px;
-          padding: 24px;
-          margin-bottom: 24px;
-          border-left: 4px solid var(--color-primary);
-        }
-
-        .node-form {
-          display: grid;
-          gap: 16px;
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .form-group label {
-          font-weight: 600;
-          margin-bottom: 6px;
+        .page-title {
+          font-size: 32px;
+          font-weight: 700;
           color: var(--color-text);
         }
 
-        .form-group input,
-        .form-group select {
-          padding: 10px;
-          border: 1px solid var(--color-border);
-          border-radius: 4px;
-          background: var(--color-background);
-          color: var(--color-text);
-          font-size: 14px;
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: 16px;
-        }
-
-        .form-actions {
+        .header-actions {
           display: flex;
           gap: 12px;
-          margin-top: 16px;
         }
 
-        .form-actions button {
-          flex: 1;
-          padding: 12px;
+        .btn {
+          padding: 10px 20px;
+          border-radius: 6px;
           border: none;
-          border-radius: 4px;
-          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          font-size: 14px;
         }
 
         .btn-primary {
-          background: var(--color-primary);
+          background-color: var(--color-primary);
           color: white;
+        }
+
+        .btn-primary:hover {
+          background-color: var(--color-secondary);
         }
 
         .btn-secondary {
-          background: var(--color-surface);
+          background-color: var(--color-surface);
           color: var(--color-text);
           border: 1px solid var(--color-border);
         }
 
-        .node-detail-panel {
-          position: fixed;
-          right: 0;
-          top: 0;
-          width: 350px;
-          height: 100vh;
-          background: var(--color-surface);
-          border-left: 1px solid var(--color-border);
-          overflow-y: auto;
-          z-index: 100;
-          animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-
-        .detail-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px;
-          border-bottom: 1px solid var(--color-border);
-          position: sticky;
-          top: 0;
-          background: var(--color-surface);
-        }
-
-        .detail-content {
-          padding: 20px;
-        }
-
-        .detail-section {
-          margin-bottom: 24px;
-        }
-
-        .detail-section h3 {
-          margin: 0 0 12px 0;
-          color: var(--color-primary);
-          font-size: 14px;
-          font-weight: 600;
-          text-transform: uppercase;
-        }
-
-        .detail-grid {
-          display: grid;
-          gap: 12px;
-        }
-
-        .detail-item {
-          display: flex;
-          justify-content: space-between;
-          padding: 8px 0;
-          font-size: 13px;
-        }
-
-        .detail-item.full {
-          flex-direction: column;
-        }
-
-        .allocations-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .allocation-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px 12px;
-          background: var(--color-background);
-          border-radius: 4px;
-          font-size: 12px;
-        }
-
-        .allocation-item .port {
-          font-weight: 600;
-          color: var(--color-primary);
-        }
-
-        .allocation-item .status {
-          font-size: 11px;
-          padding: 2px 8px;
-          border-radius: 2px;
-        }
-
-        .allocation-item .status.assigned {
-          background: var(--color-error);
-          color: white;
-        }
-
-        .allocation-item .status.available {
-          background: var(--color-success);
-          color: white;
-        }
-
-        .btn-group {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .btn-group button {
-          padding: 10px;
-          border: 1px solid var(--color-border);
-          background: var(--color-background);
-          color: var(--color-text);
-          border-radius: 4px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .btn-group button:hover {
-          background: var(--color-primary);
-          color: white;
-          border-color: var(--color-primary);
-        }
-
-        .loading,
-        .error {
-          text-align: center;
-          padding: 60px 20px;
+        .btn-secondary:hover {
+          background-color: var(--color-surface-alt);
         }
 
         .empty-state {
           text-align: center;
-          padding: 60px 20px;
+          padding: 60px 24px;
+        }
+
+        .empty-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        .empty-title {
+          font-size: 20px;
+          font-weight: 600;
+          color: var(--color-text);
+          margin-bottom: 8px;
+        }
+
+        .empty-text {
+          color: var(--color-text-secondary);
+          margin-bottom: 24px;
+        }
+
+        .nodes-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 20px;
+        }
+
+        .node-card {
+          background-color: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: 8px;
+          padding: 20px;
+          transition: all 0.3s ease;
+        }
+
+        .node-card:hover {
+          border-color: var(--color-primary);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .node-name {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--color-text);
+          margin-bottom: 8px;
+        }
+
+        .node-status {
+          display: inline-block;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          background-color: var(--color-success);
+          color: white;
+        }
+
+        @media (max-width: 768px) {
+          .page-container {
+            padding: 16px;
+          }
+
+          .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+          }
+
+          .nodes-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
+
+      {mode === 'add' ? (
+        <>
+          <div className="page-header">
+            <h1 className="page-title">Add Node</h1>
+          </div>
+          <div style={{ background: 'var(--color-surface)', padding: '24px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+              Node configuration form will be implemented here.
+            </p>
+            <form style={{ display: 'grid', gap: '16px', maxWidth: '500px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Node Name</label>
+                <input type="text" placeholder="e.g., Node-1" style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>IP Address</label>
+                <input type="text" placeholder="192.168.1.100" style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
+              </div>
+              <button type="button" className="btn btn-primary">Add Node</button>
+            </form>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="page-header">
+            <h1 className="page-title">Nodes</h1>
+            <div className="header-actions">
+              <button className="btn btn-primary">Add Node</button>
+              <button className="btn btn-secondary">Refresh</button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--color-text-secondary)' }}>Loading nodes...</p>
+            </div>
+          ) : nodes.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">[N]</div>
+              <h2 className="empty-title">No Nodes Yet</h2>
+              <p className="empty-text">Add a node to get started</p>
+              <button className="btn btn-primary">Add Node</button>
+            </div>
+          ) : (
+            <div className="nodes-grid">
+              {nodes.map((node: any) => (
+                <div key={node.id} className="node-card">
+                  <div className="node-name">{node.name}</div>
+                  <div className="node-status">Online</div>
+                  <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '12px' }}>
+                    IP: {node.ip}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
