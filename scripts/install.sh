@@ -271,7 +271,7 @@ print_access_info() {
     print_success "ArtiPanel has been successfully installed!"
     echo ""
     echo -e "${BLUE}Access Information:${NC}"
-    echo -e "  Frontend: ${GREEN}http://localhost:6000${NC}"
+    echo -e "  Frontend: ${GREEN}http://localhost:8000${NC}"
     echo -e "  API:      ${GREEN}http://localhost:4000/api${NC}"
     echo -e "  Database: ${GREEN}localhost:5432${NC} (Local PostgreSQL)"
     echo ""
