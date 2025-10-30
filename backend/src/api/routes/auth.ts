@@ -35,10 +35,12 @@ const router = Router();
  */
 router.get('/status', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const adminExists = await hasAdminUser();
+    const users = await readUsersFromDisk();
+    const hasAnyUsers = users.length > 0;
+    
     res.json({
-      initialized: adminExists,
-      requiresSetup: !adminExists,
+      initialized: hasAnyUsers,
+      requiresSetup: !hasAnyUsers,
     });
   } catch (error) {
     next(error);
