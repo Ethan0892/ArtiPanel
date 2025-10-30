@@ -18,6 +18,12 @@ import {
   extractTokenFromHeader,
   verifyToken,
 } from '../../utils/jwt';
+import {
+  storeResetToken,
+  verifyResetToken,
+  markTokenAsUsed,
+  cleanupExpiredTokens,
+} from '../../models/PasswordResetToken';
 
 const router = Router();
 
@@ -194,7 +200,7 @@ router.post('/logout', (req: Request, res: Response) => {
 
 /**
  * @route   POST /api/auth/forgot-password
- * @desc    Request password reset (for security: just returns success)
+ * @desc    Request password reset token
  * @access  Public
  */
 router.post('/forgot-password', async (req: Request, res: Response, next: NextFunction) => {
@@ -216,16 +222,17 @@ router.post('/forgot-password', async (req: Request, res: Response, next: NextFu
       return;
     }
 
-    // In production, this would:
-    // 1. Generate a reset token
-    // 2. Store it with expiration (15 minutes)
-    // 3. Send email with reset link
-    // For now, return success message
+    // Create reset token
+    const resetToken = await storeResetToken(user.id);
+
+    // In production, this would send an email with the reset link
+    // For now, log it for development
+    logger.info(`Password reset token created for user: ${username}`);
     
-    logger.info(`Password reset requested for user: ${username}`);
     res.status(200).json({ 
       message: 'If this account exists, password reset instructions have been sent to the email on file.',
-      note: 'In production, an email would be sent with a secure reset link'
+      // In production, DO NOT return the token - only send via email
+      // token: resetToken.token (for development/testing only)
     });
   } catch (error) {
     next(error);
@@ -233,8 +240,94 @@ router.post('/forgot-password', async (req: Request, res: Response, next: NextFu
 });
 
 /**
+ * @route   POST /api/auth/verify-reset-token
+ * @desc    Verify a password reset token
+ * @access  Public
+ */
+router.post('/verify-reset-token', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      res.status(400).json({ error: 'Reset token is required' });
+      return;
+    }
+
+    const resetToken = await verifyResetToken(token);
+
+    if (!resetToken) {
+      res.status(400).json({ error: 'Invalid or expired reset token' });
+      return;
+    }
+
+    // Get user info
+    const user = await getUserById(resetToken.userId);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json({ 
+      message: 'Token is valid',
+      username: user.username,
+      email: user.email,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/auth/reset-password-token
+ * @desc    Reset password using reset token (no admin required)
+ * @access  Public
+ */
+router.post('/reset-password-token', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      res.status(400).json({ error: 'Reset token and new password are required' });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return;
+    }
+
+    // Verify reset token
+    const resetToken = await verifyResetToken(token);
+    if (!resetToken) {
+      res.status(400).json({ error: 'Invalid or expired reset token' });
+      return;
+    }
+
+    // Update user password
+    const users = await readUsersFromDisk();
+    const userIndex = users.findIndex(u => u.id === resetToken.userId);
+
+    if (userIndex === -1) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    users[userIndex].passwordHash = hashPassword(newPassword);
+    await writeUsersToDisk(users);
+
+    // Mark token as used
+    await markTokenAsUsed(token);
+
+    logger.info(`Password reset completed for user: ${users[userIndex].username}`);
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * @route   POST /api/auth/reset-password
- * @desc    Admin endpoint to reset a user's password
+ * @desc    Admin endpoint to reset a user's password (legacy)
  * @access  Private (Admin only)
  */
 router.post('/reset-password', async (req: Request, res: Response, next: NextFunction) => {

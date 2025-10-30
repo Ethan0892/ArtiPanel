@@ -6,10 +6,12 @@
 
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 import '../styles/auth.css';
 
 export const Auth: React.FC = () => {
   const { login, register, requiresSetup, isLoading, error, clearError } = useAuth();
+  const [mode, setMode] = useState<'login' | 'setup' | 'forgot'>('login');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -17,13 +19,16 @@ export const Auth: React.FC = () => {
     confirmPassword: '',
   });
   const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const isSetupMode = useMemo(() => requiresSetup, [requiresSetup]);
+  const isSetupMode = useMemo(() => requiresSetup && mode === 'setup', [requiresSetup, mode]);
+  const isForgotMode = useMemo(() => mode === 'forgot', [mode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setFormError(null);
+    setSuccessMessage(null);
     clearError();
   };
 
@@ -45,6 +50,11 @@ export const Auth: React.FC = () => {
         setFormError('Invalid email address');
         return false;
       }
+    } else if (isForgotMode) {
+      if (!formData.username) {
+        setFormError('Username is required');
+        return false;
+      }
     } else {
       if (!formData.username || !formData.password) {
         setFormError('Username and password are required');
@@ -57,6 +67,7 @@ export const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setSuccessMessage(null);
 
     if (!validateForm()) {
       return;
@@ -66,6 +77,20 @@ export const Auth: React.FC = () => {
       const result = await register(formData.username, formData.email, formData.password);
       if (!result.success) {
         setFormError(result.error || 'Registration failed');
+      }
+    } else if (isForgotMode) {
+      try {
+        const response = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: formData.username }),
+        });
+        const data = await response.json();
+        setSuccessMessage(data.message || 'Password reset instructions have been sent.');
+        setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+        setTimeout(() => setMode('login'), 3000);
+      } catch (err: any) {
+        setFormError(err.message || 'Failed to process request');
       }
     } else {
       const result = await login(formData.username, formData.password);
@@ -83,13 +108,19 @@ export const Auth: React.FC = () => {
             <img src="/logo.svg" alt="ArtiPanel Logo" className="auth-logo" />
             <h1>ArtiPanel</h1>
             <p className="auth-subtitle">
-              {isSetupMode ? 'Create Admin Account' : 'Welcome Back'}
+              {isSetupMode ? 'Create Admin Account' : isForgotMode ? 'Reset Password' : 'Welcome Back'}
             </p>
           </div>
 
           {(error || formError) && (
             <div className="auth-error-banner">
               {formError || error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="auth-success-banner">
+              {successMessage}
             </div>
           )}
 
@@ -118,7 +149,7 @@ export const Auth: React.FC = () => {
                 id="username"
                 type="text"
                 name="username"
-                placeholder="Enter your username"
+                placeholder={isForgotMode ? "Enter your username to reset password" : "Enter your username"}
                 value={formData.username}
                 onChange={handleInputChange}
                 disabled={isLoading}
@@ -126,34 +157,39 @@ export const Auth: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleInputChange}
-                disabled={isLoading}
-                required
-              />
-            </div>
+            {!isForgotMode && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    required
+                  />
+                  {isSetupMode && <PasswordStrengthMeter password={formData.password} />}
+                </div>
 
-            {isSetupMode && (
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
+                {isSetupMode && (
+                  <div className="form-group">
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <button
@@ -161,11 +197,45 @@ export const Auth: React.FC = () => {
               className="auth-button"
               disabled={isLoading}
             >
-              {isLoading ? 'Please wait...' : isSetupMode ? 'Create Admin' : 'Login'}
+              {isLoading ? 'Please wait...' : isSetupMode ? 'Create Admin' : isForgotMode ? 'Send Reset Link' : 'Login'}
             </button>
           </form>
 
-          {!isSetupMode && requiresSetup && (
+          {!isSetupMode && !isForgotMode && (
+            <div className="auth-links">
+              <button 
+                type="button" 
+                className="auth-link"
+                onClick={() => {
+                  setMode('forgot');
+                  setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+                  setFormError(null);
+                  setSuccessMessage(null);
+                }}
+              >
+                Forgot Password?
+              </button>
+            </div>
+          )}
+
+          {isForgotMode && (
+            <div className="auth-links">
+              <button 
+                type="button" 
+                className="auth-link"
+                onClick={() => {
+                  setMode('login');
+                  setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+                  setFormError(null);
+                  setSuccessMessage(null);
+                }}
+              >
+                Back to Login
+              </button>
+            </div>
+          )}
+
+          {!isSetupMode && requiresSetup && !isForgotMode && (
             <div className="auth-info">
               <p>System not initialized. Create an admin account first.</p>
             </div>

@@ -24,6 +24,11 @@ export const Users: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState<UserData | null>(null);
+  const [resetPasswordForm, setResetPasswordForm] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
@@ -127,6 +132,45 @@ export const Users: React.FC = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!accessToken || !resetPasswordUser) return;
+
+    if (resetPasswordForm.newPassword.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (resetPasswordForm.newPassword !== resetPasswordForm.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          username: resetPasswordUser.username,
+          newPassword: resetPasswordForm.newPassword,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to reset password');
+
+      setResetPasswordUser(null);
+      setResetPasswordForm({ newPassword: '', confirmPassword: '' });
+      alert(`Password for ${resetPasswordUser.username} has been reset successfully.`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to reset password');
+    }
+  };
+
   const isAdmin = currentUser?.role === 'admin';
 
   if (!isAdmin) {
@@ -151,6 +195,63 @@ export const Users: React.FC = () => {
           {showCreateForm ? 'Cancel' : '+ Add User'}
         </button>
       </div>
+
+      {error && <div className="error-banner">{error}</div>}
+
+      {resetPasswordUser && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Reset Password for {resetPasswordUser.username}</h2>
+            <form onSubmit={handleResetPassword}>
+              <div className="form-group">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  value={resetPasswordForm.newPassword}
+                  onChange={(e) =>
+                    setResetPasswordForm({
+                      ...resetPasswordForm,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  minLength={8}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Confirm Password</label>
+                <input
+                  type="password"
+                  value={resetPasswordForm.confirmPassword}
+                  onChange={(e) =>
+                    setResetPasswordForm({
+                      ...resetPasswordForm,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  minLength={8}
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setResetPasswordUser(null);
+                    setResetPasswordForm({ newPassword: '', confirmPassword: '' });
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Reset Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -255,13 +356,22 @@ export const Users: React.FC = () => {
                       : 'Never'}
                   </td>
                   <td>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDeleteUser(u.id)}
-                      disabled={u.id === currentUser?.id}
-                    >
-                      Delete
-                    </button>
+                    <div className="action-buttons">
+                      <button
+                        className="btn-reset"
+                        onClick={() => setResetPasswordUser(u)}
+                        title="Reset user password"
+                      >
+                        Reset Password
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteUser(u.id)}
+                        disabled={u.id === currentUser?.id}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
