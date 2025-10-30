@@ -234,3 +234,18 @@ export async function deleteUser(userId: string): Promise<void> {
   await writeUsersToDisk(filteredUsers);
   logger.info(`User deleted: ${userId}`);
 }
+
+// Initialize default admin on first startup
+export async function initializeDefaultAdmin(): Promise<void> {
+  try {
+    const users = await readUsersFromDisk();
+    
+    // Only create default admin if no users exist
+    if (users.length === 0) {
+      await createUser('admin', 'admin@artipanel.local', 'admin123', UserRole.ADMIN);
+      logger.info('✅ Default admin account created (username: admin, password: admin123)');
+    }
+  } catch (error: any) {
+    logger.error('Failed to initialize default admin', error);
+  }
+}

@@ -6,6 +6,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import http from 'http';
 import dotenv from 'dotenv';
 import logger from './utils/logger';
+import { initializeDefaultAdmin } from './models/User';
 
 // Load environment variables
 dotenv.config();
@@ -239,7 +240,10 @@ process.on('SIGINT', () => {
 });
 
 // Start server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
+  // Initialize default admin on first startup
+  await initializeDefaultAdmin();
+
   logger.info('========================================');
   logger.info('ArtiPanel Server Management System');
   logger.info('========================================');
