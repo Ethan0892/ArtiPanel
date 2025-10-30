@@ -11,7 +11,7 @@ export const PANEL_CONFIG = {
   
   // API Configuration
   api: {
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4000',
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4001',
     timeout: 30000,
     retryAttempts: 3,
     retryDelay: 1000,
@@ -19,7 +19,7 @@ export const PANEL_CONFIG = {
 
   // WebSocket Configuration
   websocket: {
-    url: process.env.REACT_APP_WS_URL || 'ws://localhost:4000',
+    url: process.env.REACT_APP_WS_URL || 'ws://localhost:4001',
     reconnectAttempts: 5,
     reconnectDelay: 3000,
     heartbeatInterval: 30000,
