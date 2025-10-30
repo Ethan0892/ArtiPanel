@@ -311,6 +311,13 @@ ArtiPanel implements a modern, user-friendly authentication system inspired by P
 - Protected admin routes with middleware authentication
 - localStorage session persistence
 - Secure token refresh mechanism
+- **Password Reset System**: Admins can reset user passwords, users can request resets
+
+**Password Management**:
+- Forgot Password: Users can request password reset instructions
+- Admin Reset: Only admins can reset user passwords
+- Secure Hashing: All passwords use PBKDF2 with 100,000 iterations
+- See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) for complete details
 
 ArtiPanel also implements enterprise-grade security:
 - End-to-end encryption ready

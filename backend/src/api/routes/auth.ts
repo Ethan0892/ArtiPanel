@@ -5,6 +5,10 @@ import {
   authenticateUser,
   hasAdminUser,
   getUserById,
+  getUserByUsername,
+  readUsersFromDisk,
+  writeUsersToDisk,
+  hashPassword,
   UserRole,
 } from '../../models/User';
 import {
@@ -186,6 +190,98 @@ router.post('/logout', (req: Request, res: Response) => {
   // Token invalidation is typically handled on client
   // Could implement token blacklist in production
   res.json({ message: 'Logged out successfully' });
+});
+
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Request password reset (for security: just returns success)
+ * @access  Public
+ */
+router.post('/forgot-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      res.status(400).json({ error: 'Username is required' });
+      return;
+    }
+
+    const user = await getUserByUsername(username);
+
+    if (!user) {
+      // Don't reveal if user exists (security best practice)
+      res.status(200).json({ 
+        message: 'If a matching user exists, password reset instructions have been sent to their email.' 
+      });
+      return;
+    }
+
+    // In production, this would:
+    // 1. Generate a reset token
+    // 2. Store it with expiration (15 minutes)
+    // 3. Send email with reset link
+    // For now, return success message
+    
+    logger.info(`Password reset requested for user: ${username}`);
+    res.status(200).json({ 
+      message: 'If this account exists, password reset instructions have been sent to the email on file.',
+      note: 'In production, an email would be sent with a secure reset link'
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Admin endpoint to reset a user's password
+ * @access  Private (Admin only)
+ */
+router.post('/reset-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { username, newPassword } = req.body;
+    const authHeader = req.headers.authorization;
+    const token = extractTokenFromHeader(authHeader);
+
+    if (!username || !newPassword) {
+      res.status(400).json({ error: 'Username and new password are required' });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return;
+    }
+
+    // Verify admin token
+    if (!token) {
+      res.status(401).json({ error: 'Authorization required. Contact an administrator to reset your password.' });
+      return;
+    }
+
+    const tokenData = verifyToken(token);
+    if (!tokenData || tokenData.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Only administrators can reset passwords' });
+      return;
+    }
+
+    // Update user password
+    const users = await readUsersFromDisk();
+    const userIndex = users.findIndex(u => u.username === username);
+
+    if (userIndex === -1) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    users[userIndex].passwordHash = hashPassword(newPassword);
+    await writeUsersToDisk(users);
+
+    logger.info(`Password reset by admin for user: ${username}`);
+    res.json({ message: `Password for ${username} has been reset successfully` });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

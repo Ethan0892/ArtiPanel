@@ -88,7 +88,7 @@ export async function readUsersFromDisk(): Promise<User[]> {
 }
 
 // Write users to disk
-async function writeUsersToDisk(users: User[]): Promise<UsersFilePayload> {
+export async function writeUsersToDisk(users: User[]): Promise<UsersFilePayload> {
   await ensureUsersFile();
   const payload: UsersFilePayload = {
     users,
