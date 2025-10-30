@@ -240,46 +240,65 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSaving(true);
     setError(null);
     setValidationErrors({});
-    try {
-      const response = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(workingSettings),
-      });
 
-      const payload = await response.json().catch(() => ({}));
+    // Exponential backoff retry logic for rate-limited requests
+    const MAX_RETRIES = 3;
+    const BASE_DELAY_MS = 1000;
 
-      if (!response.ok) {
-        const errors = Array.isArray(payload.errors) ? payload.errors as ValidationError[] : [];
-        const map: Record<string, string> = {};
-        errors.forEach((err) => {
-          map[err.path] = err.message;
+    const attemptSave = async (retryCount: number = 0): Promise<SaveResult> => {
+      try {
+        const response = await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workingSettings),
         });
-        setValidationErrors(map);
-        return { success: false, errors };
+
+        const payload = await response.json().catch(() => ({}));
+
+        // Handle rate limit with exponential backoff
+        if (response.status === 429 && retryCount < MAX_RETRIES) {
+          const delayMs = BASE_DELAY_MS * Math.pow(2, retryCount);
+          console.warn(`Rate limited (429). Retrying in ${delayMs}ms... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          return attemptSave(retryCount + 1);
+        }
+
+        if (!response.ok) {
+          const errors = Array.isArray(payload.errors) ? payload.errors as ValidationError[] : [];
+          const map: Record<string, string> = {};
+          errors.forEach((err) => {
+            map[err.path] = err.message;
+          });
+          setValidationErrors(map);
+          return { success: false, errors };
+        }
+
+        const nextSettings = payload.settings ? payload.settings as SettingsSchema : workingSettings;
+        const resolved = deepClone(nextSettings);
+
+        setPersistedSettings(resolved);
+        setWorkingSettings(deepClone(resolved));
+        const savedAt = payload.savedAt || new Date().toISOString();
+        setLastSavedAt(savedAt);
+        setValidationErrors({});
+
+        if (resolved.appearance?.themeId) {
+          localStorage.setItem('artipanel-theme', resolved.appearance.themeId);
+        }
+
+        return { success: true };
+      } catch (saveError: any) {
+        console.error(saveError);
+        setError(saveError?.message || 'Unable to persist settings.');
+        return {
+          success: false,
+          errors: [{ path: 'global', message: saveError?.message || 'Unable to persist settings.' }],
+        };
       }
+    };
 
-      const nextSettings = payload.settings ? payload.settings as SettingsSchema : workingSettings;
-      const resolved = deepClone(nextSettings);
-
-      setPersistedSettings(resolved);
-      setWorkingSettings(deepClone(resolved));
-      const savedAt = payload.savedAt || new Date().toISOString();
-      setLastSavedAt(savedAt);
-      setValidationErrors({});
-
-      if (resolved.appearance?.themeId) {
-        localStorage.setItem('artipanel-theme', resolved.appearance.themeId);
-      }
-
-      return { success: true };
-    } catch (saveError: any) {
-      console.error(saveError);
-      setError(saveError?.message || 'Unable to persist settings.');
-      return {
-        success: false,
-        errors: [{ path: 'global', message: saveError?.message || 'Unable to persist settings.' }],
-      };
+    try {
+      return await attemptSave();
     } finally {
       setSaving(false);
     }

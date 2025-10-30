@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import { AVAILABLE_THEMES } from '../../config/themes';
 
 interface SettingsProps {
@@ -84,6 +85,10 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>(mode);
   const [feedback, setFeedback] = useState<{ message: string; tone: 'success' | 'error' | 'info' } | null>(null);
 
+  // Create a debounced version of updateSetting to prevent rapid API calls
+  // This is useful for form inputs where users might type quickly
+  const debouncedUpdateSetting = useDebounce(updateSetting, 300);
+
   const profileInitials = useMemo(() => {
     const parts = settings.profile.name.trim().split(' ').filter(Boolean);
     if (parts.length === 0) {
@@ -161,7 +166,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
     const next = channels.includes(channel)
       ? channels.filter((candidate) => candidate !== channel)
       : [...channels, channel];
-    updateSetting('notifications.incidentChannels', next);
+    debouncedUpdateSetting('notifications.incidentChannels', next);
   };
 
   const openThemeSelector = () => {
@@ -772,7 +777,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       <input
                         className="settings-input"
                         value={settings.profile.name}
-                        onChange={(event) => updateSetting('profile.name', event.target.value)}
+                        onChange={(event) => debouncedUpdateSetting('profile.name', event.target.value)}
                       />
                     </div>
                     <div className={`settings-field ${fieldHasError('profile.email') ? 'has-error' : ''}`}>
@@ -781,7 +786,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                         className={`settings-input ${fieldHasError('profile.email') ? 'has-error' : ''}`}
                         type="email"
                         value={settings.profile.email}
-                        onChange={(event) => updateSetting('profile.email', event.target.value)}
+                        onChange={(event) => debouncedUpdateSetting('profile.email', event.target.value)}
                       />
                       {renderFieldError('profile.email')}
                     </div>
@@ -790,7 +795,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       <input
                         className="settings-input"
                         value={settings.profile.role}
-                        onChange={(event) => updateSetting('profile.role', event.target.value)}
+                        onChange={(event) => debouncedUpdateSetting('profile.role', event.target.value)}
                       />
                     </div>
                     <div className="settings-field">
@@ -798,7 +803,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       <input
                         className="settings-input"
                         value={settings.profile.organization}
-                        onChange={(event) => updateSetting('profile.organization', event.target.value)}
+                        onChange={(event) => debouncedUpdateSetting('profile.organization', event.target.value)}
                       />
                     </div>
                     <div className="settings-field">
@@ -806,7 +811,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       <input
                         className="settings-input"
                         value={settings.profile.phone}
-                        onChange={(event) => updateSetting('profile.phone', event.target.value)}
+                        onChange={(event) => debouncedUpdateSetting('profile.phone', event.target.value)}
                       />
                     </div>
                     <div className="settings-field">
@@ -815,7 +820,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                         className="color-input"
                         type="color"
                         value={settings.profile.avatarColor}
-                        onChange={(event) => updateSetting('profile.avatarColor', event.target.value)}
+                        onChange={(event) => debouncedUpdateSetting('profile.avatarColor', event.target.value)}
                       />
                     </div>
                   </div>
@@ -830,7 +835,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <select
                       className="settings-select"
                       value={settings.general.language}
-                      onChange={(event) => updateSetting('general.language', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('general.language', event.target.value)}
                     >
                       {LANGUAGE_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -844,7 +849,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <select
                       className="settings-select"
                       value={settings.general.timezone}
-                      onChange={(event) => updateSetting('general.timezone', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('general.timezone', event.target.value)}
                     >
                       {TIMEZONE_OPTIONS.map((zone) => (
                         <option key={zone} value={zone}>
@@ -861,7 +866,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <input
                       className="settings-input"
                       value={settings.general.dateFormat}
-                      onChange={(event) => updateSetting('general.dateFormat', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('general.dateFormat', event.target.value)}
                     />
                     <div className="settings-field-description">
                       Supported tokens follow Day.js formatting (e.g. YYYY-MM-DD).
@@ -878,7 +883,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <input
                       className="settings-input"
                       value={settings.general.maintenanceWindow}
-                      onChange={(event) => updateSetting('general.maintenanceWindow', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('general.maintenanceWindow', event.target.value)}
                     />
                     <div className="settings-field-description">
                       Inform your team when scheduled maintenance typically occurs.
@@ -926,7 +931,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       className="settings-input"
                       type="time"
                       value={settings.backups.schedule}
-                      onChange={(event) => updateSetting('backups.schedule', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('backups.schedule', event.target.value)}
                     />
                   </div>
                   <div className="settings-field">
@@ -947,7 +952,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <select
                       className="settings-select"
                       value={settings.backups.location}
-                      onChange={(event) => updateSetting('backups.location', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('backups.location', event.target.value)}
                     >
                       {BACKUP_LOCATIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -1034,7 +1039,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <select
                       className="settings-select"
                       value={settings.notifications.digest}
-                      onChange={(event) => updateSetting('notifications.digest', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('notifications.digest', event.target.value)}
                     >
                       {DIGEST_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -1051,7 +1056,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                     <select
                       className="settings-select"
                       value={settings.notifications.escalationPolicy}
-                      onChange={(event) => updateSetting('notifications.escalationPolicy', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('notifications.escalationPolicy', event.target.value)}
                     >
                       {ESCALATION_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -1157,7 +1162,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       className="settings-textarea"
                       placeholder="e.g. 10.0.0.0/24, 192.168.1.0/26"
                       value={settings.security.allowedIPs}
-                      onChange={(event) => updateSetting('security.allowedIPs', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('security.allowedIPs', event.target.value)}
                     />
                   </div>
                   <div className="settings-field">
@@ -1207,7 +1212,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       className={`settings-input ${fieldHasError('integrations.slackWebhook') ? 'has-error' : ''}`}
                       placeholder="https://hooks.slack.com/services/..."
                       value={settings.integrations.slackWebhook}
-                      onChange={(event) => updateSetting('integrations.slackWebhook', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('integrations.slackWebhook', event.target.value)}
                       disabled={!settings.integrations.slackEnabled}
                     />
                     {renderFieldError('integrations.slackWebhook')}
@@ -1234,7 +1239,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       className={`settings-input ${fieldHasError('integrations.discordWebhook') ? 'has-error' : ''}`}
                       placeholder="https://discord.com/api/webhooks/..."
                       value={settings.integrations.discordWebhook}
-                      onChange={(event) => updateSetting('integrations.discordWebhook', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('integrations.discordWebhook', event.target.value)}
                       disabled={!settings.integrations.discordEnabled}
                     />
                     {renderFieldError('integrations.discordWebhook')}
@@ -1261,7 +1266,7 @@ const Settings: React.FC<SettingsProps> = ({ mode = 'general' }) => {
                       className={`settings-input ${fieldHasError('integrations.pagerDutyKey') ? 'has-error' : ''}`}
                       placeholder="PagerDuty integration key"
                       value={settings.integrations.pagerDutyKey}
-                      onChange={(event) => updateSetting('integrations.pagerDutyKey', event.target.value)}
+                      onChange={(event) => debouncedUpdateSetting('integrations.pagerDutyKey', event.target.value)}
                       disabled={!settings.integrations.pagerDutyEnabled}
                     />
                     {renderFieldError('integrations.pagerDutyKey')}
