@@ -6,6 +6,7 @@ Complete guide to ArtiPanel documentation and resources.
 
 - **[QUICKSTART.md](./QUICKSTART.md)** - Get up and running in 5 minutes
 - **[START_HERE.md](./START_HERE.md)** - First-time setup guide
+- **[TROUBLESHOOTING_SETUP.md](./TROUBLESHOOTING_SETUP.md)** - 🆘 Having issues with fresh setup? Start here!
 
 ## 📚 Core Documentation
 
@@ -101,7 +102,18 @@ ArtiPanel/
 └── REPOSITORY_STRUCTURE.md        # Repository layout
 ```
 
-## 🔐 Password Reset Workflow
+## � Troubleshooting
+
+Having issues? Check these resources:
+
+- **[TROUBLESHOOTING_SETUP.md](./TROUBLESHOOTING_SETUP.md)** - Fresh installation problems
+  - Login page showing instead of setup
+  - Browser storage issues
+  - Clear browser cache solutions
+  - Complete reset procedures
+  - Automated fix scripts
+
+## �🔐 Password Reset Workflow
 
 ### User Forgot Password
 1. User clicks "Forgot Password" on login page
