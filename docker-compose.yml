@@ -29,30 +29,30 @@ services:
   #       reservations:
   #         memory: 128M
 
-  # Redis Cache - Minimal memory configuration
-  redis:
-    image: redis:7-alpine
-    container_name: artipanel-redis
-    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - artipanel-network
-    # Memory limit for lightweight setup
-    deploy:
-      resources:
-        limits:
-          memory: 64M
-        reservations:
-          memory: 32M
+  # Redis Cache - Using host Redis (already installed)
+  # Uncomment the section below if you want to use Docker Redis instead
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: artipanel-redis
+  #   command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+  #   volumes:
+  #     - redis_data:/data
+  #   ports:
+  #     - "${REDIS_PORT:-6379}:6379"
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   restart: unless-stopped
+  #   networks:
+  #     - artipanel-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 64M
+  #       reservations:
+  #         memory: 32M
 
   # Backend API Server - Optimized for production
   backend:
@@ -62,14 +62,11 @@ services:
       args:
         NODE_ENV: production
     container_name: artipanel-api
-    depends_on:
-      redis:
-        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: ${PORT:-4000}
       DATABASE_URL: postgresql://${DB_USER:-artipanel}:${DB_PASSWORD:-changeMe123}@host.docker.internal:5432/${DB_NAME:-artipanel}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://host.docker.internal:6379
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
       API_URL: ${API_URL:-http://localhost:4000}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8000}
@@ -123,10 +120,6 @@ services:
 # Optional: Nginx Reverse Proxy (comment out if not needed for lighter setup)
 # Uncomment the nginx service below if you want a reverse proxy
 # Otherwise, frontend and backend are directly accessible
-
-volumes:
-  redis_data:
-    driver: local
 
 networks:
   artipanel-network:
