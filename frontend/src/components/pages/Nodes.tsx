@@ -4,39 +4,39 @@
  * Manage and monitor compute nodes
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useValidatedList, useValidatedMutation } from '../../hooks/useValidatedApi';
+import { NodeSchema } from '../../utils/validation';
+import { ErrorDisplay, LoadingSkeleton } from '../ErrorBoundary';
 
 interface NodesPageProps {
   mode?: 'list' | 'add';
 }
 
 const Nodes: React.FC<NodesPageProps> = ({ mode = 'list' }) => {
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: listResponse, loading, error, refetch } = useValidatedList(
+    '/nodes',
+    NodeSchema,
+    { refetchInterval: 60000 }
+  );
 
-  useEffect(() => {
-    if (mode === 'list') {
-      fetchNodes();
-    }
-  }, [mode]);
+  const { execute: createNode, loading: creating, error: createError } =
+    useValidatedMutation('POST', NodeSchema);
 
-  const fetchNodes = async () => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const res = await fetch('/api/nodes');
-      // const data = await res.json();
-      // setNodes(data);
-      setNodes([]);
-    } catch (error) {
-      console.error('Error fetching nodes:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [showAddForm, setShowAddForm] = useState(mode === 'add');
+  const [newNode, setNewNode] = useState({
+    name: '',
+    host: '',
+    port: 22,
+    username: '',
+    publicKey: '',
+  });
+
+  const nodes = (listResponse as any)?.data || [];
 
   return (
     <div className="page-container">
-      <style jsx>{`
+      <style>{`
         .page-container {
           flex: 1;
           overflow-y: auto;
@@ -171,20 +171,27 @@ const Nodes: React.FC<NodesPageProps> = ({ mode = 'list' }) => {
           <div className="page-header">
             <h1 className="page-title">Add Node</h1>
           </div>
+          {createError && <ErrorDisplay error={createError} onDismiss={() => {}} />}
           <div style={{ background: 'var(--color-surface)', padding: '24px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-              Node configuration form will be implemented here.
+              Configure and connect a new compute node to the panel.
             </p>
-            <form style={{ display: 'grid', gap: '16px', maxWidth: '500px' }}>
+            <form style={{ display: 'grid', gap: '16px', maxWidth: '500px' }} onSubmit={(e) => { e.preventDefault(); createNode('/nodes', newNode); }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Node Name</label>
-                <input type="text" placeholder="e.g., Node-1" style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
+                <input type="text" placeholder="e.g., Node-1" value={newNode.name} onChange={(e) => setNewNode({...newNode, name: e.target.value})} style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>IP Address</label>
-                <input type="text" placeholder="192.168.1.100" style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Host Address</label>
+                <input type="text" placeholder="192.168.1.100" value={newNode.host} onChange={(e) => setNewNode({...newNode, host: e.target.value})} style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
               </div>
-              <button type="button" className="btn btn-primary">Add Node</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>SSH Port</label>
+                <input type="number" placeholder="22" value={newNode.port} onChange={(e) => setNewNode({...newNode, port: parseInt(e.target.value)})} style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
+              </div>
+              <button type="submit" className="btn btn-primary" disabled={creating} style={{ padding: '10px 20px', backgroundColor: creating ? '#ccc' : 'var(--color-primary)' }}>
+                {creating ? 'Adding...' : 'Add Node'}
+              </button>
             </form>
           </div>
         </>
@@ -194,14 +201,14 @@ const Nodes: React.FC<NodesPageProps> = ({ mode = 'list' }) => {
             <h1 className="page-title">Nodes</h1>
             <div className="header-actions">
               <button className="btn btn-primary">Add Node</button>
-              <button className="btn btn-secondary">Refresh</button>
+              <button className="btn btn-secondary" onClick={() => refetch()}>Refresh</button>
             </div>
           </div>
 
+          {error && <ErrorDisplay error={error} onDismiss={() => {}} />}
+
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--color-text-secondary)' }}>Loading nodes...</p>
-            </div>
+            <LoadingSkeleton count={3} />
           ) : nodes.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">[N]</div>
@@ -216,7 +223,7 @@ const Nodes: React.FC<NodesPageProps> = ({ mode = 'list' }) => {
                   <div className="node-name">{node.name}</div>
                   <div className="node-status">Online</div>
                   <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '12px' }}>
-                    IP: {node.ip}
+                    Host: {node.host}
                   </p>
                 </div>
               ))}
