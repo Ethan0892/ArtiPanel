@@ -11,7 +11,10 @@ import '../styles/auth.css';
 
 export const Auth: React.FC = () => {
   const { login, register, requiresSetup, isLoading, error, clearError } = useAuth();
-  const [mode, setMode] = useState<'login' | 'setup' | 'forgot'>('login');
+  // If setup is required, start in setup mode. Otherwise start in login mode.
+  const [mode, setMode] = useState<'login' | 'setup' | 'forgot'>(() => 
+    requiresSetup ? 'setup' : 'login'
+  );
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -201,7 +204,7 @@ export const Auth: React.FC = () => {
             </button>
           </form>
 
-          {!isSetupMode && !isForgotMode && (
+          {!isSetupMode && !isForgotMode && !requiresSetup && (
             <div className="auth-links">
               <button 
                 type="button" 
@@ -224,13 +227,14 @@ export const Auth: React.FC = () => {
                 type="button" 
                 className="auth-link"
                 onClick={() => {
-                  setMode('login');
+                  // If setup is required, go back to setup, otherwise go to login
+                  setMode(requiresSetup ? 'setup' : 'login');
                   setFormData({ username: '', email: '', password: '', confirmPassword: '' });
                   setFormError(null);
                   setSuccessMessage(null);
                 }}
               >
-                Back to Login
+                {requiresSetup ? 'Back to Setup' : 'Back to Login'}
               </button>
             </div>
           )}
