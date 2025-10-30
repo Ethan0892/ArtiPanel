@@ -11,6 +11,7 @@ import Nodes from './pages/Nodes';
 import Storage from './pages/Storage';
 import Monitoring from './pages/Monitoring';
 import Remote from './pages/Remote';
+import Users from './pages/Users';
 import Settings from './pages/Settings';
 
 interface RouterProps {
@@ -51,6 +52,8 @@ const Router: React.FC<RouterProps> = ({ currentPage }) => {
         return <Remote />;
       case 'remote-files':
         return <Remote mode="files" />;
+      case 'users':
+        return <Users />;
       case 'settings':
       case 'settings-general':
         return <Settings mode="general" />;

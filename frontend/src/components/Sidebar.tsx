@@ -98,6 +98,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onPageSelect, activ
       ],
     },
     {
+      id: 'users',
+      label: 'Users',
+      icon: '[👥]',
+      path: '/users',
+    },
+    {
       id: 'settings',
       label: 'Settings',
       icon: '[⚙]',

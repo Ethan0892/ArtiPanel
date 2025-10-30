@@ -12,6 +12,7 @@ dotenv.config();
 
 // Routes
 import authRoutes from './api/routes/auth';
+import adminRoutes from './api/routes/admin';
 import serverRoutes from './api/routes/servers';
 import containerRoutes from './api/routes/containers';
 import gamingRoutes from './api/routes/gaming';
@@ -112,6 +113,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes - Organized by domain
 app.use('/api/auth', authRoutes);
+app.use('/api/admin/users', adminRoutes);
 app.use('/api/servers', serverRoutes);
 app.use('/api/containers', containerRoutes);
 app.use('/api/gaming', gamingRoutes);
