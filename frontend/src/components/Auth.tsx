@@ -179,7 +179,7 @@ export const Auth: React.FC = () => {
         </div>
 
         <div className="auth-footer">
-          <p>ArtiPanel © 2025 • Pterodactyl-inspired Server Management</p>
+          <p>ArtiPanel © 2025 • Server Management Panel</p>
         </div>
       </div>
     </div>
