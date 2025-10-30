@@ -275,7 +275,37 @@ export function useServerControl(serverId: string) {
  * Hook to fetch system health and uptime information
  */
 export function useSystemHealth() {
-  return useFetch<{ status: string; uptime: string; memory: any; timestamp: string }>('/health', { refetchInterval: 30000 });
+  const [data, setData] = useState<{ status: string; uptime: string; memory: any; timestamp: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ApiError | null>(null);
+
+  const fetchHealth = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Health endpoint is at root, not under /api
+      const response = await fetch('/health');
+      if (!response.ok) {
+        throw new Error(`Health check failed: ${response.statusText}`);
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      const apiError = err instanceof Error ? (err as ApiError) : new Error('Unknown error') as ApiError;
+      setError(apiError);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHealth();
+    // Refetch every 30 seconds
+    const interval = setInterval(fetchHealth, 30000);
+    return () => clearInterval(interval);
+  }, [fetchHealth]);
+
+  return { data, loading, error, refetch: fetchHealth };
 }
 
 export default {
