@@ -6,6 +6,7 @@ Complete guide to ArtiPanel documentation and resources.
 
 - **[QUICKSTART.md](./QUICKSTART.md)** - Get up and running in 5 minutes
 - **[START_HERE.md](./START_HERE.md)** - First-time setup guide
+- **[SETUP_LINUX_RPI.md](./SETUP_LINUX_RPI.md)** - Linux/Raspberry Pi installation (permission fixes, memory optimization)
 - **[TROUBLESHOOTING_SETUP.md](./TROUBLESHOOTING_SETUP.md)** - 🆘 Having issues with fresh setup? Start here!
 
 ## 📚 Core Documentation
