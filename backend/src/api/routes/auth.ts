@@ -24,6 +24,7 @@ import {
   markTokenAsUsed,
   cleanupExpiredTokens,
 } from '../../models/PasswordResetToken';
+import { sendPasswordResetEmail } from '../../utils/emailService';
 
 const router = Router();
 
@@ -225,14 +226,24 @@ router.post('/forgot-password', async (req: Request, res: Response, next: NextFu
     // Create reset token
     const resetToken = await storeResetToken(user.id);
 
-    // In production, this would send an email with the reset link
-    // For now, log it for development
-    logger.info(`Password reset token created for user: ${username}`);
+    // Send password reset email
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password`;
+    const emailResult = await sendPasswordResetEmail(
+      user.email,
+      user.username,
+      resetToken.token,
+      resetUrl
+    );
+
+    if (emailResult.success) {
+      logger.info(`Password reset email sent to: ${user.email} (user: ${username})`);
+    } else {
+      logger.warn(`Failed to send password reset email to: ${user.email} - ${emailResult.message}`);
+    }
     
     res.status(200).json({ 
       message: 'If this account exists, password reset instructions have been sent to the email on file.',
-      // In production, DO NOT return the token - only send via email
-      // token: resetToken.token (for development/testing only)
+      _debug: emailResult.message // Only for development
     });
   } catch (error) {
     next(error);
