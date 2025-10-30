@@ -271,6 +271,13 @@ export function useServerControl(serverId: string) {
   };
 }
 
+/**
+ * Hook to fetch system health and uptime information
+ */
+export function useSystemHealth() {
+  return useFetch<{ status: string; uptime: string; memory: any; timestamp: string }>('/health', { refetchInterval: 30000 });
+}
+
 export default {
   useFetch,
   useServers,
@@ -291,4 +298,5 @@ export default {
   useUpdateServer,
   useDeleteServer,
   useServerControl,
+  useSystemHealth,
 };

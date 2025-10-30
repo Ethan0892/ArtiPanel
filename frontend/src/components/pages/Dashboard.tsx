@@ -7,11 +7,13 @@
 import React from 'react';
 import { useServers } from '../../hooks/useApi';
 import { useNodes } from '../../hooks/useApi';
+import { useSystemHealth } from '../../hooks/useApi';
 import { ErrorDisplay, LoadingSkeleton } from '../ErrorBoundary';
 
 const Dashboard: React.FC = () => {
   const { data: serversData, loading: serversLoading, error: serversError } = useServers();
   const { data: nodesData, loading: nodesLoading, error: nodesError } = useNodes();
+  const { data: healthData, loading: healthLoading, error: healthError } = useSystemHealth();
 
   // Calculate stats from data
   const servers = (serversData as any)?.data || [];
@@ -19,15 +21,8 @@ const Dashboard: React.FC = () => {
   const activeServers = servers.length;
   const activeNodes = nodes.length;
   
-  // Calculate system uptime (convert from server timestamp)
-  const calculateUptime = () => {
-    const startDate = new Date('2025-01-15'); // System start date
-    const now = new Date();
-    const diff = now.getTime() - startDate.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    return `${days} days ${hours} hours`;
-  };
+  // Get real uptime from health endpoint
+  const systemUptime = (healthData as any)?.uptime || 'Loading...';
 
   // Calculate bandwidth (sum from all servers)
   const calculateBandwidth = () => {
@@ -39,12 +34,12 @@ const Dashboard: React.FC = () => {
   const stats = {
     servers: activeServers,
     nodes: activeNodes,
-    uptime: calculateUptime(),
+    uptime: systemUptime,
     bandwidth: calculateBandwidth(),
   };
 
-  const isLoading = serversLoading || nodesLoading;
-  const error = serversError || nodesError;
+  const isLoading = serversLoading || nodesLoading || healthLoading;
+  const error = serversError || nodesError || healthError;
 
   return (
     <div className="page-container">
