@@ -4,8 +4,9 @@
  * Header with search, notifications, and settings
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAlerts } from '../hooks/useApi';
+import { useSettings } from '../context/SettingsContext';
 
 interface TopBarProps {
   onThemeClick: () => void;
@@ -20,6 +21,18 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const { data: alertsData } = useAlerts();
+  const { settings } = useSettings();
+  const profile = settings.profile;
+  const avatarInitials = useMemo(() => {
+    const parts = profile.name.trim().split(' ').filter(Boolean);
+    if (parts.length === 0) {
+      return 'U';
+    }
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+  }, [profile.name]);
 
   return (
     <div className="topbar">
@@ -155,6 +168,24 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout
           align-items: center;
           justify-content: center;
           position: relative;
+        }
+
+        .topbar-avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 600;
+          color: #fff;
+        }
+
+        .topbar-avatar-sm {
+          width: 36px;
+          height: 36px;
+          font-size: 14px;
         }
 
         .topbar-button:hover {
@@ -439,16 +470,21 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout
             title="User menu"
             onClick={() => setShowUserMenu(!showUserMenu)}
           >
-            👤
+            <span className="topbar-avatar" style={{ backgroundColor: profile.avatarColor }}>
+              {avatarInitials}
+            </span>
           </button>
           {showUserMenu && (
             <div className="dropdown-menu">
               <div className="dropdown-header">Account</div>
               <div className="dropdown-item">
-                <span style={{ fontSize: '18px' }}>👤</span>
-                <div>
-                  <div style={{ fontWeight: 600 }}>Ethan</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Administrator</div>
+                <span className="topbar-avatar topbar-avatar-sm" style={{ backgroundColor: profile.avatarColor }}>
+                  {avatarInitials}
+                </span>
+                <div style={{ lineHeight: 1.4 }}>
+                  <div style={{ fontWeight: 600 }}>{profile.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{profile.role}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{profile.email}</div>
                 </div>
               </div>
               <div className="dropdown-divider"></div>

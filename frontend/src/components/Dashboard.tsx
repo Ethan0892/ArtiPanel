@@ -5,8 +5,9 @@
  * configurable colors and professional design
  */
 
-import React, { useState, useEffect } from 'react';
-import { applyTheme, getSavedTheme, AVAILABLE_THEMES } from '../config/themes';
+import React, { useCallback, useEffect, useState } from 'react';
+import { applyTheme, AVAILABLE_THEMES, getSavedTheme } from '../config/themes';
+import { useSettings } from '../context/SettingsContext';
 import { shortcutManager } from '../utils/shortcuts';
 import { ErrorBoundary } from './ErrorBoundary';
 import Sidebar from './Sidebar';
@@ -19,29 +20,75 @@ export interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
+  const { settings, updateSetting } = useSettings();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [currentTheme, setCurrentTheme] = useState(getSavedTheme());
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    const selected = AVAILABLE_THEMES.find(theme => theme.id === settings.appearance.themeId);
+    return selected || getSavedTheme();
+  });
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
 
+  const handlePageSelect = useCallback((pageId: string) => {
+    if (pageId === 'settings') {
+      setCurrentPage('settings-general');
+      return;
+    }
+    setCurrentPage(pageId);
+  }, []);
+
   // Initialize keyboard shortcuts and theme
   useEffect(() => {
-    applyTheme(currentTheme);
     shortcutManager.addListener();
-
-    // Handle theme changes
-    window.addEventListener('theme-changed', (e: any) => {
-      const newTheme = AVAILABLE_THEMES.find(t => t.id === e.detail.themeId);
-      if (newTheme) {
-        setCurrentTheme(newTheme);
-        applyTheme(newTheme);
-      }
-    });
 
     return () => {
       shortcutManager.removeListener();
     };
   }, []);
+
+  useEffect(() => {
+    applyTheme(currentTheme);
+  }, [currentTheme]);
+
+  useEffect(() => {
+    const handleOpenThemeSelector = (_event: Event) => setShowThemeSelector(true);
+    window.addEventListener('ui:open-theme-selector', handleOpenThemeSelector);
+    return () => window.removeEventListener('ui:open-theme-selector', handleOpenThemeSelector);
+  }, []);
+
+  useEffect(() => {
+    const themeFromSettings = AVAILABLE_THEMES.find(theme => theme.id === settings.appearance.themeId);
+    if (themeFromSettings && themeFromSettings.id !== currentTheme.id) {
+      setCurrentTheme(themeFromSettings);
+    }
+  }, [settings.appearance.themeId, currentTheme.id]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-density', settings.appearance.density);
+  }, [settings.appearance.density]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-tooltips', settings.appearance.showTooltips ? 'on' : 'off');
+  }, [settings.appearance.showTooltips]);
+
+  useEffect(() => {
+    const className = 'artipanel-reduce-motion';
+    if (settings.appearance.animations) {
+      document.documentElement.classList.remove(className);
+    } else {
+      document.documentElement.classList.add(className);
+    }
+  }, [settings.appearance.animations]);
+
+  useEffect(() => {
+    if (settings.appearance.themeId !== currentTheme.id) {
+      updateSetting('appearance.themeId', currentTheme.id);
+    }
+    const mode = currentTheme.isDark ? 'dark' : 'light';
+    if (settings.appearance.theme !== mode) {
+      updateSetting('appearance.theme', mode);
+    }
+  }, [currentTheme, settings.appearance.themeId, settings.appearance.theme, updateSetting]);
 
   // Handle sidebar toggle
   useEffect(() => {
@@ -76,7 +123,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
         <Sidebar 
           isOpen={sidebarOpen} 
           onToggle={() => setSidebarOpen(!sidebarOpen)}
-          onPageSelect={setCurrentPage}
+          onPageSelect={handlePageSelect}
+          activePage={currentPage}
         />
 
         {/* Main Content Area */}
@@ -84,7 +132,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
           {/* Top Navigation Bar */}
           <TopBar 
             onThemeClick={() => setShowThemeSelector(!showThemeSelector)}
-            onSettingsClick={() => setCurrentPage('settings')}
+            onSettingsClick={() => setCurrentPage('settings-general')}
             onLogout={onLogout}
           />
 
@@ -101,7 +149,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
             onClose={() => setShowThemeSelector(false)}
             onThemeSelect={(theme) => {
               setCurrentTheme(theme);
-              applyTheme(theme);
+              updateSetting('appearance.themeId', theme.id);
+              updateSetting('appearance.theme', theme.isDark ? 'dark' : 'light');
               setShowThemeSelector(false);
             }}
           />
@@ -115,11 +164,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
           color: var(--color-text);
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
             'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-          font-size: 14px;
+          font-size: ${settings.appearance.density === 'compact' ? '13px' : '14px'};
           line-height: 1.5;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
         }
+
+        ${settings.appearance.animations ? '' : `.artipanel-dashboard * {
+          transition: none !important;
+          animation: none !important;
+        }`}
 
         .dashboard-container {
           display: flex;

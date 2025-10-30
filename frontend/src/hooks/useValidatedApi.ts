@@ -6,7 +6,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { apiClient, ApiError } from '../services/api';
-import { Validator } from '../utils/validation';
 import { z } from 'zod';
 
 export interface UseValidatedApiState<T> {

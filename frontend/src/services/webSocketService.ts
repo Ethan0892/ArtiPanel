@@ -40,9 +40,11 @@ interface GameServerEvent {
   timestamp: Date;
 }
 
+type Listener = (payload: any) => void;
+
 class WebSocketService {
   private socket: Socket | null = null;
-  private listeners: Map<string, Function[]> = new Map();
+  private listeners: Map<string, Listener[]> = new Map();
   private connected: boolean = false;
 
   /**
@@ -135,7 +137,7 @@ class WebSocketService {
   /**
    * Subscribe to event
    */
-  on(event: string, callback: Function) {
+  on(event: string, callback: Listener) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
@@ -150,7 +152,7 @@ class WebSocketService {
   /**
    * Unsubscribe from event
    */
-  off(event: string, callback: Function) {
+  off(event: string, callback: Listener) {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
       const index = callbacks.indexOf(callback);

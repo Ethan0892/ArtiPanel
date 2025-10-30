@@ -256,26 +256,33 @@ export function useDashboardMonitoring(serverIds: string[]) {
   const [allStats, setAllStats] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
+    if (serverIds.length === 0) {
+      return;
+    }
+
+    const handleUpdate = (data: any) => {
+      setAllStats((prev) => {
+        const next = new Map(prev);
+        next.set(data.serverId, data);
+        return next;
+      });
+    };
+
     // Subscribe to all servers
     serverIds.forEach((serverId) => {
       webSocketService.subscribeToServer(serverId);
     });
 
     // Listen for updates
-    webSocketService.on('monitoring:update', (data) => {
-      setAllStats((prev) => {
-        const newMap = new Map(prev);
-        newMap.set(data.serverId, data);
-        return newMap;
-      });
-    });
+    webSocketService.on('monitoring:update', handleUpdate);
 
     return () => {
       serverIds.forEach((serverId) => {
         webSocketService.unsubscribeFromServer(serverId);
       });
+      webSocketService.off('monitoring:update', handleUpdate);
     };
-  }, [serverIds.join(',')]); // Re-subscribe if server list changes
+  }, [serverIds]);
 
   return Array.from(allStats.values());
 }

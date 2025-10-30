@@ -16,6 +16,7 @@ export const ServerSchema = z.object({
   port: z.number().int().min(1, 'Port must be between 1 and 65535').max(65535),
   username: z.string().optional(),
   password: z.string().optional(),
+  nodeId: z.string().optional(),
   status: z.enum(['online', 'offline', 'maintenance']).optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
@@ -100,6 +101,7 @@ export class Validator {
       port: true,
       username: true,
       password: true,
+      nodeId: true,
     }).parse(data);
   }
 

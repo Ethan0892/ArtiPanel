@@ -14,7 +14,7 @@ interface StoragePageProps {
 }
 
 const Storage: React.FC<StoragePageProps> = ({ mode = 'overview' }) => {
-  const { data: storageData, loading, error, refetch } = useValidatedList(
+  const { data: storageData, loading, error } = useValidatedList(
     '/storage',
     StorageSchema,
     { refetchInterval: 30000 }

@@ -19,6 +19,7 @@ import storageRoutes from './api/routes/storage';
 import monitoringRoutes from './api/routes/monitoring';
 import remoteAccessRoutes from './api/routes/remoteAccess';
 import nodesRoutes from './api/routes/nodes';
+import settingsRoutes from './api/routes/settings';
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -118,6 +119,7 @@ app.use('/api/storage', storageRoutes);
 app.use('/api/monitoring', monitoringRoutes);
 app.use('/api/remote', remoteAccessRoutes);
 app.use('/api/nodes', nodesRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // WebSocket Connection Management
 io.on('connection', (socket: any) => {

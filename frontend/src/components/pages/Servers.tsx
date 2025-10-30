@@ -1,12 +1,13 @@
 /**
  * Servers Page
- * 
+ *
  * Manage and monitor game/application servers
  */
 
 import React, { useState } from 'react';
+import { z } from 'zod';
 import { useValidatedList, useValidatedMutation } from '../../hooks/useValidatedApi';
-import { ServerSchema } from '../../utils/validation';
+import { ServerSchema, Validator, formatZodError } from '../../utils/validation';
 import { ErrorDisplay, LoadingSkeleton } from '../ErrorBoundary';
 
 interface ServersPageProps {
@@ -17,23 +18,102 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
   const { data: listResponse, loading, error, refetch } = useValidatedList(
     '/servers',
     ServerSchema,
-    { refetchInterval: 30000 }
+    { refetchInterval: 45000 }
   );
 
   const { execute: createServer, loading: creating, error: createError } =
     useValidatedMutation('POST', ServerSchema);
 
   const [showCreateForm, setShowCreateForm] = useState(mode === 'create');
-  const [createError2, setCreateError2] = useState<Error | null>(null);
   const [newServer, setNewServer] = useState({
     name: '',
     host: '',
-    port: 3000,
+    port: '25565',
     username: '',
     password: '',
+    nodeId: '',
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  const servers = listResponse?.data || [];
+  const resetForm = () => {
+    setNewServer({
+      name: '',
+      host: '',
+      port: '25565',
+      username: '',
+      password: '',
+      nodeId: '',
+    });
+    setFormErrors({});
+  };
+
+  const handleCreateSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormErrors({});
+    setFeedback(null);
+
+    const portValue = Number(newServer.port);
+    if (!Number.isInteger(portValue) || portValue < 1 || portValue > 65535) {
+      setFormErrors({ port: 'Port must be between 1 and 65535.' });
+      return;
+    }
+
+    const payload = {
+      name: newServer.name.trim(),
+      host: newServer.host.trim(),
+      port: portValue,
+      username: newServer.username.trim() || undefined,
+      password: newServer.password.trim() || undefined,
+      nodeId: newServer.nodeId.trim() || undefined,
+    };
+
+    try {
+      Validator.validateServerCreate(payload);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const formatted = formatZodError(validationError);
+        const nextErrors: Record<string, string> = {};
+        Object.entries(formatted).forEach(([path, messages]) => {
+          if (messages.length > 0) {
+            nextErrors[path] = messages[0];
+          }
+        });
+        setFormErrors(nextErrors);
+      } else {
+        setFormErrors({ global: 'Unable to validate server details.' });
+      }
+      return;
+    }
+
+    const result = await createServer('/servers', payload);
+    if (!result) {
+      return;
+    }
+
+    resetForm();
+    await refetch();
+    setFeedback('Server queued for provisioning. Connection details saved.');
+
+    if (mode !== 'create') {
+      setShowCreateForm(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (mode === 'create') {
+      resetForm();
+      return;
+    }
+
+    resetForm();
+    setShowCreateForm(false);
+    setFeedback(null);
+  };
+
+  const servers = (listResponse as any)?.data || [];
+  const isShowingForm = mode === 'create' || showCreateForm;
+  const inlineError = (path: string) => formErrors[path] ?? null;
 
   return (
     <div className="page-container">
@@ -114,6 +194,31 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
           margin-bottom: 24px;
         }
 
+        .success-banner {
+          padding: 12px 16px;
+          border-radius: 6px;
+          background-color: rgba(34, 197, 94, 0.15);
+          border: 1px solid rgba(34, 197, 94, 0.4);
+          color: var(--color-success);
+          margin-bottom: 16px;
+          font-size: 14px;
+        }
+
+        .error-banner {
+          padding: 12px 16px;
+          border-radius: 6px;
+          background-color: rgba(239, 68, 68, 0.12);
+          border: 1px solid rgba(239, 68, 68, 0.4);
+          color: var(--color-error);
+          margin-bottom: 16px;
+          font-size: 14px;
+        }
+
+        .form-error {
+          font-size: 12px;
+          color: var(--color-error);
+        }
+
         .servers-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -167,30 +272,95 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
         }
       `}</style>
 
-      {mode === 'create' ? (
+      {isShowingForm ? (
         <>
           <div className="page-header">
             <h1 className="page-title">Create Server</h1>
           </div>
-          {createError && <ErrorDisplay error={createError} onDismiss={() => setCreateError2(null)} />}
+          {feedback && <div className="success-banner">{feedback}</div>}
+          {formErrors.global && <div className="error-banner">{formErrors.global}</div>}
+          {createError && <ErrorDisplay error={createError} onDismiss={() => {}} />}
           <div style={{ background: 'var(--color-surface)', padding: '24px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-              Server creation form and configuration will be implemented here.
+              Provide server connection details. Provisioning will continue in the background.
             </p>
-            <form style={{ display: 'grid', gap: '16px', maxWidth: '500px' }}>
+            <form style={{ display: 'grid', gap: '16px', maxWidth: '500px' }} onSubmit={handleCreateSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Server Name</label>
-                <input type="text" placeholder="e.g., Game Server 1" style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }} />
+                <input
+                  type="text"
+                  placeholder="e.g., Survival-01"
+                  value={newServer.name}
+                  onChange={(event) => setNewServer((prev) => ({ ...prev, name: event.target.value }))}
+                  style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}
+                />
+                {inlineError('name') && <span className="form-error">{inlineError('name')}</span>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Node</label>
-                <select style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}>
-                  <option>Select a node</option>
-                </select>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Host Address</label>
+                <input
+                  type="text"
+                  placeholder="203.0.113.10"
+                  value={newServer.host}
+                  onChange={(event) => setNewServer((prev) => ({ ...prev, host: event.target.value }))}
+                  style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}
+                />
+                {inlineError('host') && <span className="form-error">{inlineError('host')}</span>}
               </div>
-              <button type="button" className="btn btn-primary" disabled={creating}>
-                {creating ? 'Creating...' : 'Create Server'}
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Game Port</label>
+                <input
+                  type="number"
+                  placeholder="25565"
+                  value={newServer.port}
+                  min={1}
+                  max={65535}
+                  onChange={(event) => setNewServer((prev) => ({ ...prev, port: event.target.value }))}
+                  style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}
+                />
+                {inlineError('port') && <span className="form-error">{inlineError('port')}</span>}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>SSH Username (optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g., ubuntu"
+                  value={newServer.username}
+                  onChange={(event) => setNewServer((prev) => ({ ...prev, username: event.target.value }))}
+                  style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>SSH Password (optional)</label>
+                <input
+                  type="password"
+                  placeholder="Optional for key-based auth"
+                  value={newServer.password}
+                  onChange={(event) => setNewServer((prev) => ({ ...prev, password: event.target.value }))}
+                  style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>Assign Node (optional)</label>
+                <input
+                  type="text"
+                  placeholder="edge-1"
+                  value={newServer.nodeId}
+                  onChange={(event) => setNewServer((prev) => ({ ...prev, nodeId: event.target.value }))}
+                  style={{ padding: '10px', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'var(--color-background)', color: 'var(--color-text)' }}
+                />
+                {inlineError('nodeId') && <span className="form-error">{inlineError('nodeId')}</span>}
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button type="submit" className="btn btn-primary" disabled={creating}>
+                  {creating ? 'Creating...' : 'Create Server'}
+                </button>
+                {mode !== 'create' && (
+                  <button type="button" className="btn btn-secondary" onClick={handleCancel}>
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </>
@@ -199,12 +369,23 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
           <div className="page-header">
             <h1 className="page-title">Servers</h1>
             <div className="header-actions">
-              <button className="btn btn-primary">Create Server</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setFeedback(null);
+                  setFormErrors({});
+                  resetForm();
+                  setShowCreateForm(true);
+                }}
+              >
+                Create Server
+              </button>
               <button className="btn btn-secondary" onClick={() => refetch()}>Refresh</button>
             </div>
           </div>
 
-          {error && <ErrorDisplay error={error} onDismiss={() => setCreateError2(null)} />}
+          {feedback && <div className="success-banner">{feedback}</div>}
+          {error && <ErrorDisplay error={error} onDismiss={() => {}} />}
 
           {loading ? (
             <LoadingSkeleton count={3} />
@@ -212,17 +393,27 @@ const Servers: React.FC<ServersPageProps> = ({ mode = 'list' }) => {
             <div className="empty-state">
               <div className="empty-icon">[S]</div>
               <h2 className="empty-title">No Servers Yet</h2>
-              <p className="empty-text">Create your first server to get started</p>
-              <button className="btn btn-primary">Create Server</button>
+              <p className="empty-text">Create your first server to get started.</p>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setFeedback(null);
+                  setFormErrors({});
+                  resetForm();
+                  setShowCreateForm(true);
+                }}
+              >
+                Create Server
+              </button>
             </div>
           ) : (
             <div className="servers-grid">
               {servers.map((server: any) => (
-                <div key={server.id} className="server-card">
+                <div key={server.id ?? server.name} className="server-card">
                   <div className="server-name">{server.name}</div>
-                  <div className="server-status">Online</div>
+                  <div className="server-status">{server.status || 'Online'}</div>
                   <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '12px' }}>
-                    Node: {server.node}
+                    Host: {server.host}
                   </p>
                 </div>
               ))}

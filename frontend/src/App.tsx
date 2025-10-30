@@ -1,27 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import Dashboard from './components/Dashboard'
-import './App.css'
+import React from 'react';
+import Dashboard from './components/Dashboard';
+import { SettingsProvider } from './context/SettingsContext';
+import './App.css';
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('theme')
-    return saved ? saved === 'dark' : true
-  })
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
-  }, [isDarkMode])
-
-  const handleThemeToggle = () => {
-    setIsDarkMode(!isDarkMode)
-  }
-
   return (
-    <div className="app">
-      <Dashboard onThemeClick={handleThemeToggle} />
-    </div>
-  )
+    <SettingsProvider>
+      <div className="app">
+        <Dashboard />
+      </div>
+    </SettingsProvider>
+  );
 }
 
-export default App
+export default App;
