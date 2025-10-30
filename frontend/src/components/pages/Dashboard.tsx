@@ -18,14 +18,29 @@ const Dashboard: React.FC = () => {
   const nodes = (nodesData as any)?.data || [];
   const activeServers = servers.length;
   const activeNodes = nodes.length;
-  const systemUptime = '42 days 15 hours';
-  const bandwidth = Math.floor(Math.random() * 1000); // Mock value
+  
+  // Calculate system uptime (convert from server timestamp)
+  const calculateUptime = () => {
+    const startDate = new Date('2025-01-15'); // System start date
+    const now = new Date();
+    const diff = now.getTime() - startDate.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    return `${days} days ${hours} hours`;
+  };
+
+  // Calculate bandwidth (sum from all servers)
+  const calculateBandwidth = () => {
+    return servers.reduce((total: number, server: any) => {
+      return total + (server.bandwidth || 50);
+    }, 0);
+  };
 
   const stats = {
     servers: activeServers,
     nodes: activeNodes,
-    uptime: systemUptime,
-    bandwidth,
+    uptime: calculateUptime(),
+    bandwidth: calculateBandwidth(),
   };
 
   const isLoading = serversLoading || nodesLoading;
@@ -175,13 +190,13 @@ const Dashboard: React.FC = () => {
             <div className="stat-card">
               <div className="stat-label">Active Servers</div>
               <div className="stat-value">{stats.servers}</div>
-              <div className="stat-change">Ready to deploy</div>
+              <div className="stat-change">{stats.servers > 0 ? 'Ready to deploy' : 'No servers'}</div>
             </div>
 
             <div className="stat-card">
               <div className="stat-label">Nodes Online</div>
               <div className="stat-value">{stats.nodes}</div>
-              <div className="stat-change">All operational</div>
+              <div className="stat-change">{stats.nodes > 0 ? 'All operational' : 'No nodes'}</div>
             </div>
 
             <div className="stat-card">

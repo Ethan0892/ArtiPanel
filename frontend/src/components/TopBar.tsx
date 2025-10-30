@@ -13,10 +13,14 @@ interface TopBarProps {
 
 const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
   const [searchFocused, setSearchFocused] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   return (
     <div className="topbar">
-      <style jsx>{`
+      <style>{`
         .topbar {
           background-color: var(--color-surface);
           border-bottom: 1px solid var(--color-border);
@@ -107,6 +111,7 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
           display: flex;
           align-items: center;
           gap: 12px;
+          position: relative;
         }
 
         .status-indicator {
@@ -146,11 +151,17 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
           display: flex;
           align-items: center;
           justify-content: center;
+          position: relative;
         }
 
         .topbar-button:hover {
           background-color: var(--color-surface-alt);
           color: var(--color-text);
+        }
+
+        .topbar-button.active {
+          background-color: var(--color-primary);
+          color: white;
         }
 
         .notification-badge {
@@ -180,6 +191,85 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
           display: none;
         }
 
+        /* Dropdown Menu Styles */
+        .dropdown-menu {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background-color: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          min-width: 280px;
+          margin-top: 8px;
+          z-index: 1000;
+        }
+
+        .dropdown-header {
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--color-border);
+          font-weight: 600;
+          font-size: 13px;
+          color: var(--color-text);
+        }
+
+        .dropdown-item {
+          padding: 12px 16px;
+          color: var(--color-text);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 13px;
+        }
+
+        .dropdown-item:hover {
+          background-color: var(--color-surface-alt);
+        }
+
+        .dropdown-item.danger {
+          color: var(--color-error);
+        }
+
+        .dropdown-item.danger:hover {
+          background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .dropdown-divider {
+          height: 1px;
+          background-color: var(--color-border);
+          margin: 8px 0;
+        }
+
+        .shortcuts-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          padding: 16px;
+        }
+
+        .shortcut-item {
+          background-color: var(--color-surface-alt);
+          padding: 12px;
+          border-radius: 6px;
+          font-size: 12px;
+        }
+
+        .shortcut-key {
+          background-color: var(--color-background);
+          padding: 4px 6px;
+          border-radius: 3px;
+          font-family: monospace;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+
+        .shortcut-desc {
+          color: var(--color-text-secondary);
+          font-size: 11px;
+        }
+
         @media (max-width: 1024px) {
           .keyboard-hint {
             display: none !important;
@@ -205,6 +295,10 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
 
           .breadcrumb {
             display: none;
+          }
+
+          .dropdown-menu {
+            min-width: 240px;
           }
         }
       `}</style>
@@ -235,14 +329,49 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
           <span>All Systems Online</span>
         </div>
 
-        <button 
-          className="topbar-button notification-badge" 
-          title="Notifications"
-        >
-          🔔
-          <span className="badge-count">3</span>
-        </button>
+        {/* Notifications Button */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            className={`topbar-button notification-badge ${showNotifications ? 'active' : ''}`}
+            title="Notifications"
+            onClick={() => setShowNotifications(!showNotifications)}
+          >
+            🔔
+            <span className="badge-count">3</span>
+          </button>
+          {showNotifications && (
+            <div className="dropdown-menu">
+              <div className="dropdown-header">Notifications (3)</div>
+              <div className="dropdown-item">
+                <span>⚠️</span>
+                <div>
+                  <div style={{ fontWeight: 600 }}>Server Alert</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>High CPU usage detected</div>
+                </div>
+              </div>
+              <div className="dropdown-item">
+                <span>✓</span>
+                <div>
+                  <div style={{ fontWeight: 600 }}>Backup Complete</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Database backup successful</div>
+                </div>
+              </div>
+              <div className="dropdown-item">
+                <span>ℹ️</span>
+                <div>
+                  <div style={{ fontWeight: 600 }}>Update Available</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>New version 0.2.0 released</div>
+                </div>
+              </div>
+              <div className="dropdown-divider"></div>
+              <div className="dropdown-item" style={{ justifyContent: 'center' }}>
+                View all notifications
+              </div>
+            </div>
+          )}
+        </div>
 
+        {/* Theme Button */}
         <button 
           className="topbar-button" 
           title="Toggle theme (Ctrl+Shift+T)"
@@ -251,26 +380,92 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
           🎨
         </button>
 
-        <button 
-          className="topbar-button" 
-          title="Keyboard shortcuts (Shift+?)"
-        >
-          ⌨️
-        </button>
+        {/* Keyboard Shortcuts Button */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            className={`topbar-button ${showShortcuts ? 'active' : ''}`}
+            title="Keyboard shortcuts (Shift+?)"
+            onClick={() => setShowShortcuts(!showShortcuts)}
+          >
+            ⌨️
+          </button>
+          {showShortcuts && (
+            <div className="dropdown-menu" style={{ minWidth: '320px' }}>
+              <div className="dropdown-header">Keyboard Shortcuts</div>
+              <div className="shortcuts-grid">
+                <div className="shortcut-item">
+                  <div className="shortcut-key">Ctrl+P</div>
+                  <div className="shortcut-desc">Search</div>
+                </div>
+                <div className="shortcut-item">
+                  <div className="shortcut-key">Ctrl+Shift+T</div>
+                  <div className="shortcut-desc">Toggle theme</div>
+                </div>
+                <div className="shortcut-item">
+                  <div className="shortcut-key">Shift+?</div>
+                  <div className="shortcut-desc">Help</div>
+                </div>
+                <div className="shortcut-item">
+                  <div className="shortcut-key">Esc</div>
+                  <div className="shortcut-desc">Close menu</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
-        <button 
-          className="topbar-button" 
-          title="Settings"
-        >
-          ⚙️
-        </button>
+        {/* Settings Button */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            className={`topbar-button ${showSettings ? 'active' : ''}`}
+            title="Settings"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            ⚙️
+          </button>
+          {showSettings && (
+            <div className="dropdown-menu">
+              <div className="dropdown-header">Settings</div>
+              <div className="dropdown-item">Display</div>
+              <div className="dropdown-item">Notifications</div>
+              <div className="dropdown-item">Security</div>
+              <div className="dropdown-item">API Keys</div>
+              <div className="dropdown-divider"></div>
+              <div className="dropdown-item">Preferences</div>
+            </div>
+          )}
+        </div>
 
-        <button 
-          className="topbar-button" 
-          title="User menu"
-        >
-          👤
-        </button>
+        {/* User Menu Button */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            className={`topbar-button ${showUserMenu ? 'active' : ''}`}
+            title="User menu"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            👤
+          </button>
+          {showUserMenu && (
+            <div className="dropdown-menu">
+              <div className="dropdown-header">Account</div>
+              <div className="dropdown-item">
+                <span style={{ fontSize: '18px' }}>👤</span>
+                <div>
+                  <div style={{ fontWeight: 600 }}>Ethan</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Administrator</div>
+                </div>
+              </div>
+              <div className="dropdown-divider"></div>
+              <div className="dropdown-item">Profile</div>
+              <div className="dropdown-item">Account Settings</div>
+              <div className="dropdown-item">Two-Factor Auth</div>
+              <div className="dropdown-divider"></div>
+              <div className="dropdown-item danger" onClick={onLogout}>
+                Logout
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
