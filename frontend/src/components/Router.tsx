@@ -11,6 +11,7 @@ import Nodes from './pages/Nodes';
 import Storage from './pages/Storage';
 import Monitoring from './pages/Monitoring';
 import Remote from './pages/Remote';
+import Settings from './pages/Settings';
 
 interface RouterProps {
   currentPage: string;
@@ -50,6 +51,17 @@ const Router: React.FC<RouterProps> = ({ currentPage }) => {
         return <Remote />;
       case 'remote-files':
         return <Remote mode="files" />;
+      case 'settings':
+      case 'settings-general':
+        return <Settings mode="general" />;
+      case 'settings-notifications':
+        return <Settings mode="notifications" />;
+      case 'settings-security':
+        return <Settings mode="security" />;
+      case 'settings-api':
+        return <Settings mode="api" />;
+      case 'settings-display':
+        return <Settings mode="display" />;
       default:
         return <Dashboard />;
     }

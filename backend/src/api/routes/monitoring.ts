@@ -15,7 +15,38 @@ router.get('/servers/all/stats', (_req, res) => {
 });
 
 router.get('/alerts', (_req, res) => {
-  res.json({ message: 'Get alerts endpoint', alerts: [] });
+  res.json({ 
+    message: 'Get alerts endpoint', 
+    data: [
+      {
+        id: '1',
+        type: 'warning',
+        title: 'High CPU Usage',
+        description: 'Server api-1 CPU usage exceeds 80%',
+        timestamp: new Date(Date.now() - 5 * 60000).toISOString(),
+        severity: 'warning',
+        read: false
+      },
+      {
+        id: '2',
+        type: 'success',
+        title: 'Backup Complete',
+        description: 'Database backup completed successfully',
+        timestamp: new Date(Date.now() - 15 * 60000).toISOString(),
+        severity: 'success',
+        read: false
+      },
+      {
+        id: '3',
+        type: 'info',
+        title: 'Update Available',
+        description: 'ArtiPanel v0.2.0 is now available',
+        timestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
+        severity: 'info',
+        read: true
+      }
+    ]
+  });
 });
 
 router.post('/alerts/acknowledge/:id', (_req, res) => {

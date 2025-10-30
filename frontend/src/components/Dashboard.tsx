@@ -84,6 +84,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
           {/* Top Navigation Bar */}
           <TopBar 
             onThemeClick={() => setShowThemeSelector(!showThemeSelector)}
+            onSettingsClick={() => setCurrentPage('settings')}
             onLogout={onLogout}
           />
 

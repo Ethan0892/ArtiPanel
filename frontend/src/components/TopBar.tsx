@@ -5,18 +5,21 @@
  */
 
 import React, { useState } from 'react';
+import { useAlerts } from '../hooks/useApi';
 
 interface TopBarProps {
   onThemeClick: () => void;
+  onSettingsClick: () => void;
   onLogout?: () => void;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
+const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout }) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const { data: alertsData } = useAlerts();
 
   return (
     <div className="topbar">
@@ -337,36 +340,37 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
             onClick={() => setShowNotifications(!showNotifications)}
           >
             🔔
-            <span className="badge-count">3</span>
+            <span className="badge-count">{((alertsData as any)?.data || []).length}</span>
           </button>
           {showNotifications && (
             <div className="dropdown-menu">
-              <div className="dropdown-header">Notifications (3)</div>
-              <div className="dropdown-item">
-                <span>⚠️</span>
-                <div>
-                  <div style={{ fontWeight: 600 }}>Server Alert</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>High CPU usage detected</div>
+              <div className="dropdown-header">Notifications ({((alertsData as any)?.data || []).length})</div>
+              {((alertsData as any)?.data || []).length > 0 ? (
+                <>
+                  {((alertsData as any)?.data || []).map((alert: any) => (
+                    <div key={alert.id} className="dropdown-item">
+                      <span>
+                        {alert.severity === 'warning' ? '⚠️' : alert.severity === 'success' ? '✓' : 'ℹ️'}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600 }}>{alert.title}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{alert.description}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                          {new Date(alert.timestamp).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="dropdown-divider"></div>
+                  <div className="dropdown-item" style={{ justifyContent: 'center' }}>
+                    View all notifications
+                  </div>
+                </>
+              ) : (
+                <div className="dropdown-item" style={{ justifyContent: 'center', color: 'var(--color-text-secondary)' }}>
+                  No notifications
                 </div>
-              </div>
-              <div className="dropdown-item">
-                <span>✓</span>
-                <div>
-                  <div style={{ fontWeight: 600 }}>Backup Complete</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Database backup successful</div>
-                </div>
-              </div>
-              <div className="dropdown-item">
-                <span>ℹ️</span>
-                <div>
-                  <div style={{ fontWeight: 600 }}>Update Available</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>New version 0.2.0 released</div>
-                </div>
-              </div>
-              <div className="dropdown-divider"></div>
-              <div className="dropdown-item" style={{ justifyContent: 'center' }}>
-                View all notifications
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -419,21 +423,13 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onLogout }) => {
           <button 
             className={`topbar-button ${showSettings ? 'active' : ''}`}
             title="Settings"
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => {
+              setShowSettings(false);
+              onSettingsClick();
+            }}
           >
             ⚙️
           </button>
-          {showSettings && (
-            <div className="dropdown-menu">
-              <div className="dropdown-header">Settings</div>
-              <div className="dropdown-item">Display</div>
-              <div className="dropdown-item">Notifications</div>
-              <div className="dropdown-item">Security</div>
-              <div className="dropdown-item">API Keys</div>
-              <div className="dropdown-divider"></div>
-              <div className="dropdown-item">Preferences</div>
-            </div>
-          )}
         </div>
 
         {/* User Menu Button */}
