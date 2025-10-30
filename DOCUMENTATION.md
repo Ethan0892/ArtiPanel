@@ -4,10 +4,22 @@ Welcome to the ArtiPanel documentation! This is your one-stop resource for every
 
 ## 🚀 Getting Started
 
+### ⚡ Fastest Way (Recommended)
+**[Setup Wizard](./SETUP_GUIDE.md)** - Automated setup in 2 minutes!
+
+```bash
+# Linux/macOS
+bash setup.sh
+
+# Windows
+setup.bat
+```
+
 ### For New Users
-1. **[Quick Start Guide](./README.md)** - Get up and running in 5 minutes
-2. **[First Login Guide](#first-login)** - How to access and configure your first admin account
-3. **[Web Interface Tour](./docs/FEATURES.md)** - Overview of all features
+1. **[Setup Guide](./SETUP_GUIDE.md)** - Automated setup wizard (recommended)
+2. **[Quick Start Guide](./README.md)** - Get up and running in 5 minutes
+3. **[First Login Guide](#first-login)** - How to access and configure your first admin account
+4. **[Web Interface Tour](./docs/FEATURES.md)** - Overview of all features
 
 ### For Developers
 1. **[Architecture Overview](./docs/ARCHITECTURE.md)** - Understand the system design

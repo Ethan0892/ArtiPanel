@@ -7,46 +7,59 @@
 
 ArtiPanel is a modern, open-source server control panel built for developers and system administrators. It combines server management, container orchestration, gaming server hosting, and NAS management into a single unified platform.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (2 Minutes!)
 
-### Prerequisites
+### Automatic Setup (Recommended)
+
+**For Linux/macOS:**
+```bash
+git clone https://github.com/Ethan0892/ArtiPanel.git
+cd ArtiPanel
+chmod +x setup.sh
+bash setup.sh
+```
+
+**For Windows:**
+```batch
+git clone https://github.com/Ethan0892/ArtiPanel.git
+cd ArtiPanel
+setup.bat
+```
+
+The setup wizard will handle everything automatically! ✨
+
+### Manual Setup
+
+Prerequisites:
 - **Node.js**: v16+ (v18+ recommended)
 - **npm**: v7+
-- **PostgreSQL**: v12+ (or use SQLite for development)
-- **Linux/macOS/Windows WSL2** (Windows native support coming)
-
-### Installation (5 minutes)
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Ethan0892/ArtiPanel.git
 cd ArtiPanel
 
-# 2. Install backend dependencies
-cd backend
-npm install
+# 2. Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
 
-# 3. Install frontend dependencies
-cd ../frontend
-npm install
-
-# 4. Start backend (in backend/ directory)
-cd ../backend
-PORT=4001 npm run dev
-
-# 5. Start frontend (in new terminal, in frontend/ directory)
-cd frontend
-npm run dev
+# 3. Start services
+cd ../backend && PORT=4001 npm run dev
+# In new terminal:
+cd frontend && npm run dev
 ```
 
 ### First Login
-The system automatically creates a default admin account on first startup:
+
+The system automatically creates a default admin account:
+- **URL**: http://localhost:3000
 - **Username**: `admin`
 - **Password**: `admin123`
 
 ⚠️ **IMPORTANT**: Change this password immediately in production!
 
-Access the panel at: **http://localhost:3000**
+### Need Help?
+See **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** for detailed instructions and troubleshooting.
 
 ## ✨ Core Features
 
