@@ -80,6 +80,7 @@ export const Auth: React.FC = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
+            <img src="/logo.svg" alt="ArtiPanel Logo" className="auth-logo" />
             <h1>ArtiPanel</h1>
             <p className="auth-subtitle">
               {isSetupMode ? 'Create Admin Account' : 'Welcome Back'}

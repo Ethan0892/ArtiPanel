@@ -218,11 +218,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onPageSelect, activ
           width: 32px;
           height: 32px;
           border-radius: 8px;
-          background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
+          flex-shrink: 0;
         }
 
         .sidebar-logo-text {
@@ -376,7 +375,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onPageSelect, activ
 
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">⚙️</div>
+          <img src="/icon.svg" alt="ArtiPanel" className="sidebar-logo-icon" />
           <span className="sidebar-logo-text">ArtiPanel</span>
         </div>
         <button className="toggle-btn" onClick={onToggle} title="Toggle sidebar">
