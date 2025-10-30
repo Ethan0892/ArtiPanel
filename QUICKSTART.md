@@ -157,10 +157,40 @@ JWT_SECRET=your_random_secret_key_minimum_32_chars_long
 2. **API**: http://localhost:4000/api
 3. **Health**: http://localhost:4000/health
 
+### First-User Admin Setup (Pterodactyl-Style)
+
+When you first access http://localhost:3000, you'll see the **Create Admin Account** page:
+
+1. **Enter Admin Credentials**:
+   - Email: Your admin email
+   - Username: Your admin username
+   - Password: Strong password (min 8 characters)
+   - Confirm Password: Repeat password
+
+2. **Click "Create Admin"**
+   - First user is automatically assigned **Admin** role
+   - You're logged in immediately
+   - System is initialized
+
+3. **You're Ready!**
+   - Access the dashboard
+   - Manage servers
+   - Create additional users (Users → Create User)
+
+### Subsequent Users
+
+After first admin account is created:
+
+1. **Admin Creates Users** via Users Dashboard (`/users`)
+2. **Or Users Login** directly if they already have accounts
+3. **Admin Controls Access** by assigning roles and permissions
+
+**See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) for full details**
+
 ### Default Setup
-- Complete the setup wizard in the browser
-- Create admin account
+- Complete the first-user admin setup (as described above)
 - Configure nodes and servers
+- Invite other users through the Users management page
 
 ---
 
@@ -227,6 +257,7 @@ For more detailed information, see:
 
 | Document | Purpose |
 |----------|---------|
+| [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) | Auth system, user management, security |
 | [docs/SETUP.md](./docs/SETUP.md) | Complete setup & configuration guide |
 | [docs/INSTALLATION.md](./docs/INSTALLATION.md) | Detailed installation guide |
 | [docs/API.md](./docs/API.md) | REST API reference |

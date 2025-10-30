@@ -280,12 +280,42 @@ See [docs/API.md](./docs/API.md) for complete REST API documentation and WebSock
 - [ ] CI/CD pipelines
 - [ ] Machine learning predictions
 
-## Security
+## Authentication & Security
 
-ArtiPanel implements enterprise-grade security:
-- End-to-end encryption
-- Role-based access control
-- Two-factor authentication
+### Pterodactyl-Style Authentication
+ArtiPanel implements a modern, user-friendly authentication system inspired by Pterodactyl:
+
+**First User Setup**:
+1. On first access, system detects no admin user exists
+2. User is prompted to **Create Admin Account** with:
+   - Username
+   - Email
+   - Password (minimum 8 characters)
+   - Password confirmation
+3. First user is automatically assigned **Admin role**
+4. System is then initialized and ready to use
+
+**Subsequent Users**:
+1. Login page appears for normal users
+2. Admins create new users through the **Users Management Dashboard** (`/users`)
+3. Admins can:
+   - Create users with specific roles (admin, user, viewer)
+   - Change user roles
+   - Deactivate or delete users
+   - View user login history
+
+**Security Features**:
+- PBKDF2 password hashing (100,000 iterations)
+- JWT tokens (24-hour access, 7-day refresh)
+- Role-based access control (Admin, User, Viewer)
+- Protected admin routes with middleware authentication
+- localStorage session persistence
+- Secure token refresh mechanism
+
+ArtiPanel also implements enterprise-grade security:
+- End-to-end encryption ready
+- Advanced role-based access control
+- Two-factor authentication (planned)
 - Regular security audits
 - Compliance with GDPR, HIPAA
 - DDoS protection ready
