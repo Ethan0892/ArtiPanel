@@ -111,39 +111,55 @@ npm list | head -20
 
 ```bash
 cd backend
-npm run dev
+PORT=4001 npm run dev
 ```
 
 **Expected output:**
 ```
-Starting ts-node development server...
-[timestamp] [info] Server running on http://localhost:4000
-[timestamp] [info] Database connected
+[INFO] ts-node-dev ver. 2.0.0 
+======================================== 
+ArtiPanel Server Management System
+========================================
+API Server: http://localhost:4001
+Environment: development
+Frontend URL: http://localhost:3000
+Version: 0.1.0-alpha.1
+========================================
+✅ Default admin account created (username: admin, password: admin123)
+Server started successfully
 ```
 
 ### Terminal 2: Start Frontend
 
 ```bash
-cd frontend
+cd ../frontend
 npm run dev
 ```
 
 **Expected output:**
 ```
-VITE v5.4.21 ready in XXX ms
+VITE v5.x.x ready in XXX ms
 
-➜  Local:   http://localhost:5173/
+➜  Local:   http://localhost:3000/
 ➜  Network: use --host to expose
 ```
 
 ### Terminal 3: Access the Application
 
-```bash
-# Open browser or use curl
-curl http://localhost:5173/
+1. **Open browser**: http://localhost:3000
+2. **Login with default credentials**:
+   - Username: `admin`
+   - Password: `admin123`
+3. **Change password immediately** (click user icon → Settings)
 
-# Check backend status
-curl http://localhost:4000/api/auth/status
+### Verify Backend is Running
+
+```bash
+# Check API status
+curl http://localhost:4001/api/auth/status
+
+# Expected response:
+# {"initialized":true,"requiresSetup":false}
 ```
 
 ## Troubleshooting on Linux/RPi

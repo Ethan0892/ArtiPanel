@@ -1,394 +1,309 @@
-# ArtiPanel - The Ultimate Server Control Panel
+# ArtiPanel - Enterprise Server Management Platform
 
-> ⚠️ **Pre-Release (v0.1.0-alpha)** - This is an early beta version. Features may be unstable and APIs may change. Use at your own risk!
+> **Version**: 0.1.0-alpha.1  
+> **Status**: Active Development  
+> **License**: MIT  
+> **GitHub**: [Ethan0892/ArtiPanel](https://github.com/Ethan0892/ArtiPanel)
 
-> 🚀 **GitHub**: [Ethan0892/ArtiPanel](https://github.com/Ethan0892/ArtiPanel)
+ArtiPanel is a modern, open-source server control panel built for developers and system administrators. It combines server management, container orchestration, gaming server hosting, and NAS management into a single unified platform.
 
-**ArtiPanel** is a next-generation, open-source server control panel designed to defeat all existing panels by combining the best features from cPanel, Plesk, Coolify, and more - while adding unique capabilities for gaming, NAS management, and advanced remote access.
+## 🚀 Quick Start
 
-## Key Features That Beat the Competition
+### Prerequisites
+- **Node.js**: v16+ (v18+ recommended)
+- **npm**: v7+
+- **PostgreSQL**: v12+ (or use SQLite for development)
+- **Linux/macOS/Windows WSL2** (Windows native support coming)
 
-### ✨ What Makes ArtiPanel Better
+### Installation (5 minutes)
 
-| Feature | ArtiPanel | cPanel | Plesk | Coolify |
-|---------|-----------|--------|-------|---------|
-| **Unified Multi-Server Dashboard** | ✅ | ❌ | ✅ | ❌ |
-| **Gaming Server Management** (Minecraft/Games) | ✅ | ❌ | ❌ | ❌ |
-| **NAS/Storage Management** | ✅ | ❌ | ❌ | ❌ |
-| **Docker + Kubernetes** | ✅ | ❌ | ✅ | ✅ |
-| **Real-time Monitoring** | ✅ | ✅ | ✅ | ✅ |
-| **Free & Open-Source** | ✅ | ❌ | ❌ | ✅ |
-| **Container Orchestration** | ✅ | ❌ | ✅ | ✅ |
-| **Advanced Remote Access** (VNC/RDP/SSH Terminal) | ✅ | ❌ | ❌ | ❌ |
-| **AI-Powered Maintenance** | ✅ | ❌ | ❌ | ❌ |
-| **Multi-OS Support** | ✅ | ❌ | ✅ | ✅ |
+```bash
+# 1. Clone the repository
+git clone https://github.com/Ethan0892/ArtiPanel.git
+cd ArtiPanel
 
-## Project Structure
+# 2. Install backend dependencies
+cd backend
+npm install
+
+# 3. Install frontend dependencies
+cd ../frontend
+npm install
+
+# 4. Start backend (in backend/ directory)
+cd ../backend
+PORT=4001 npm run dev
+
+# 5. Start frontend (in new terminal, in frontend/ directory)
+cd frontend
+npm run dev
+```
+
+### First Login
+The system automatically creates a default admin account on first startup:
+- **Username**: `admin`
+- **Password**: `admin123`
+
+⚠️ **IMPORTANT**: Change this password immediately in production!
+
+Access the panel at: **http://localhost:3000**
+
+## ✨ Core Features
+
+### 🖥️ Server Management
+- **Multi-Server Dashboard**: Monitor and manage multiple servers from one interface
+- **Real-time System Monitoring**: CPU, Memory, Disk, Network metrics
+- **SSH Terminal**: Direct terminal access to any server
+- **File Manager**: Browse and edit server files
+- **Process Management**: View and control running processes
+
+### 🎮 Gaming Server Management
+- **Minecraft Server Hosting**: Create, manage, and backup Minecraft servers
+- **Multiple Game Support**: Extensible framework for additional game servers
+- **Auto-Backups**: Scheduled backups with one-click restore
+- **Player Management**: Whitelist, ban, and player administration
+- **Performance Monitoring**: Game server-specific metrics
+
+### 📦 Container & Orchestration
+- **Docker Container Management**: Deploy, scale, and manage Docker containers
+- **Docker Compose Support**: Multi-container application deployment
+- **Kubernetes Integration**: Deploy to K8s clusters (advanced)
+- **Container Logs & Monitoring**: Real-time container metrics
+
+### 💾 Storage & NAS Management
+- **Cloud Storage Integration**: Connect to S3, OneDrive, Google Drive
+- **Local Storage Management**: Monitor and manage storage pools
+- **Backup Automation**: Scheduled backups with encryption
+- **Snapshot & Recovery**: Create and restore point-in-time snapshots
+
+### 🔐 Security & Authentication
+- **Role-Based Access Control**: Admin, User, Viewer roles
+- **Session Management**: Secure token-based authentication
+- **Password Reset**: Email-based password recovery with token verification
+- **Password Strength Meter**: Real-time password strength validation
+- **Two-Factor Authentication**: Optional 2FA for enhanced security (roadmap)
+
+### 📊 Advanced Features
+- **Monitoring & Alerts**: Set up alerts for system events
+- **Resource Scheduling**: Schedule backups, updates, and maintenance
+- **Remote Access**: VNC, RDP, and SSH terminal access
+- **User Management**: Create and manage system users with role assignments
+- **Audit Logging**: Comprehensive action logging for compliance
+
+## 📋 Technology Stack
+
+### Backend
+- **Runtime**: Node.js with TypeScript
+- **Framework**: Express.js
+- **Database**: PostgreSQL (with JSON file storage for development)
+- **Authentication**: JWT tokens (24-hour access, 7-day refresh)
+- **Email**: Nodemailer (SMTP/mock support)
+- **Real-time**: Socket.IO for live updates
+
+### Frontend
+- **Framework**: React 18+
+- **Bundler**: Vite (⚡ Lightning-fast development)
+- **Styling**: CSS3 with custom theme system
+- **State Management**: Context API + Hooks
+- **HTTP Client**: Axios with retry logic
+
+## 📁 Project Structure
 
 ```
 ArtiPanel/
-├── backend/                    # Node.js/Express API
+├── backend/                          # Node.js/Express API Server
 │   ├── src/
-│   │   ├── api/               # REST endpoints
-│   │   ├── services/          # Business logic
-│   │   ├── models/            # Database schemas
-│   │   ├── middleware/        # Auth, logging, etc
-│   │   ├── utils/             # Helpers & utilities
-│   │   └── index.ts           # Entry point
-│   ├── tests/                 # Unit & integration tests
+│   │   ├── api/routes/              # REST endpoints
+│   │   ├── models/                  # Data models & business logic
+│   │   ├── utils/                   # Helper functions & services
+│   │   ├── middleware/              # Auth, logging, error handling
+│   │   └── index.ts                 # Server entry point
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── Dockerfile
 │
-├── frontend/                   # React Dashboard
-│   ├── public/
+├── frontend/                         # React Dashboard
 │   ├── src/
-│   │   ├── components/        # React components
-│   │   ├── pages/             # Page components
-│   │   ├── hooks/             # Custom hooks
-│   │   ├── context/           # Context API
-│   │   ├── services/          # API calls
-│   │   ├── styles/            # CSS/SCSS
-│   │   └── App.tsx            # Main component
-│   ├── package.json
+│   │   ├── components/              # React components
+│   │   ├── pages/                   # Page layouts
+│   │   ├── context/                 # Context API (auth, theme)
+│   │   ├── services/                # API communication
+│   │   ├── styles/                  # CSS stylesheets
+│   │   └── utils/                   # Utilities & helpers
+│   ├── public/                       # Static assets
+│   ├── index.html
 │   ├── vite.config.ts
-│   └── Dockerfile
+│   └── package.json
 │
-├── scripts/                    # Installation & setup
-│   ├── install.sh             # Main installer
-│   ├── migrate.sh             # Database migrations
-│   ├── docker-compose.yml     # Docker orchestration
-│   └── system-requirements.sh  # Check dependencies
+├── docs/                             # Documentation
+│   ├── ARCHITECTURE.md
+│   ├── AUTHENTICATION.md
+│   ├── FEATURES.md
+│   ├── CLI.md
+│   └── DEPLOYMENT.md
 │
-├── docs/                       # Documentation
-│   ├── INSTALLATION.md        # Setup guide
-│   ├── API.md                 # API documentation
-│   ├── ARCHITECTURE.md        # System design
-│   ├── FEATURES.md            # Feature guide
-│   └── TROUBLESHOOTING.md     # Help & fixes
-│
-├── plugins/                    # Community plugins
-│   ├── minecraft-manager/
-│   ├── nas-sync/
-│   └── example-plugin/
-│
-└── examples/                   # Configuration examples
-    ├── docker-compose.yml
-    └── environment.sample
-
+└── README.md                         # This file
 ```
 
-## Core Modules
+## 🔧 Configuration
 
-### 1. **Server Management** 🖥️
-- Multi-OS support (Linux, Windows, macOS)
-- SSH/WinRM tunnel management
-- Command execution & scripting
-- Package management automation
+### Environment Variables
 
-### 2. **Container Orchestration** 🐳
-- Docker Swarm & Kubernetes support
-- Image registry management
-- Compose deployment
-- Container health monitoring
-- Auto-scaling policies
-
-### 3. **Gaming Server Management** 🎮 (Pterodactyl-like)
-- **Minecraft** (Java/Bedrock editions)
-- **Distributed Node Architecture** - Run servers across multiple machines
-- **Automatic Port Allocation** - Smart allocation system
-- **Node Health Monitoring** - Real-time resource tracking
-- **Server Migration** - Move servers between nodes
-- **Automatic Backup** scheduling
-- **Mod/plugin** management
-- **Player management** & whitelist
-- **Performance monitoring**
-- **Auto-scaling** based on load
-
-### 4. **NAS & Storage** 💾
-- RAID monitoring
-- Shared folder management
-- SMB, NFS, iSCSI protocols
-- Backup scheduling to cloud (S3, Azure, etc)
-- Storage analytics & quotas
-- Media server integration
-
-### 5. **Remote Access** 🌐
-- VNC console access
-- RDP support
-- SSH terminal with web UI
-- File browser & upload
-- Wake-on-LAN
-- VPN integration
-
-### 6. **Maintenance & Health** 🔧
-- Automated patching
-- System health dashboard
-- Log aggregation & analysis
-- Performance analytics
-- Predictive alerts
-- Resource optimization
-
-### 7. **Security** 🔐
-- 2FA authentication
-- Role-based access control (RBAC)
-- API key management
-- Encryption at rest & in transit
-- Audit logging
-- DDoS protection integration
-- Firewall rules management
-
-### 8. **One-Click Deployment** ⚡
-- WordPress, Nextcloud, Ghost, etc.
-- Cloud-init integration
-- Custom deployment scripts
-- Template library
-- Automated SSL certificates
-
-## Tech Stack
-
-### Backend
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js with TypeScript
-- **Database**: PostgreSQL + Redis cache
-- **Real-time**: WebSocket (Socket.io)
-- **Container**: Docker & Kubernetes
-- **Message Queue**: Bull/RabbitMQ
-
-### Frontend
-- **Framework**: React 18+
-- **Build Tool**: Vite
-- **Styling**: TailwindCSS + Shadcn/ui
-- **State**: TanStack Query + Zustand
-- **Real-time**: Socket.io client
-- **Charts**: Recharts
-
-### Infrastructure
-- **Containerization**: Docker & Docker Compose
-- **Orchestration**: Kubernetes support
-- **Reverse Proxy**: Nginx/Traefik
-- **Monitoring**: Prometheus + Grafana integration
-
-## Quick Start
-
-### Prerequisites
-- Linux server (Ubuntu 20.04+, Debian 11+, CentOS 8+)
-- Docker & Docker Compose
-- Node.js 18+
-- PostgreSQL 12+ (or use Docker)
-- **Lightweight**: 1GB+ RAM, 5GB+ storage
-- **Production**: 2GB+ RAM, 20GB+ storage
-
-### Installation
-
-**Quick Start (Docker Compose - Recommended)**:
-
+**Backend** (`backend/.env`):
 ```bash
-# Clone repository
-git clone https://github.com/Ethan0892/ArtiPanel.git
-cd ArtiPanel
+# Server
+NODE_ENV=development
+PORT=4001
+FRONTEND_URL=http://localhost:3000
 
-# Copy environment template
-cp examples/environment.sample .env
-nano .env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=artipanel
+DB_USER=postgres
+DB_PASSWORD=password
 
-# Start services
-docker-compose up -d
+# Authentication
+JWT_SECRET=your-super-secret-key-change-this
+PASSWORD_SALT=artipanel-salt
 
-# Access panel
-# Frontend: http://localhost:3000
-# API: http://localhost:4000/api
+# Email (optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=noreply@artipanel.local
 ```
 
-**Automated Installation (Linux/macOS)**:
-
+**Frontend** (`frontend/.env`):
 ```bash
-# Clone repository
-git clone https://github.com/Ethan0892/ArtiPanel.git
-cd ArtiPanel
-
-# Run installer
-sudo chmod +x scripts/install.sh
-sudo ./scripts/install.sh
+REACT_APP_API_URL=http://localhost:4001
+REACT_APP_WS_URL=ws://localhost:4001
 ```
 
-**For detailed setup instructions**, see [docs/SETUP.md](./docs/SETUP.md) which includes:
-- System requirements for all platforms
-- 3 installation methods (Docker, Script, Manual)
-- Complete configuration guide
-- Troubleshooting and verification steps
-- Production checklist
+## 🏃 Running the Application
 
-## Development
+### Development Mode
 
-### Backend Setup
+**Terminal 1 - Backend**:
 ```bash
 cd backend
-npm install
-npm run dev    # Development mode
-npm run build  # Production build
-npm test       # Run tests
+npm run dev
 ```
 
-### Frontend Setup
+**Terminal 2 - Frontend**:
 ```bash
 cd frontend
-npm install
-npm run dev    # Vite dev server
-npm run build  # Production build
+npm run dev
 ```
 
-## API Documentation
+### Production Build
 
-See [docs/API.md](./docs/API.md) for complete REST API documentation and WebSocket events.
+```bash
+# Backend
+cd backend
+npm run build
+npm run start
 
-## Features Comparison with Top 20 Panels
+# Frontend
+cd frontend
+npm run build
+npm run preview
+```
 
-### vs. cPanel ($17.49-$60.99/month)
-- **Win**: Free, Gaming servers, NAS management, Better UI
-- **Tie**: Feature completeness, Stability
-- **Lose**: Enterprise support
+## 🧪 Testing
 
-### vs. Plesk ($14.13-$61.13/month)
-- **Win**: Free, Gaming support, Open-source, Better modern tech
-- **Tie**: Multi-server management
-- **Lose**: Enterprise polish
+```bash
+# Run backend tests
+cd backend
+npm test
 
-### vs. Coolify (Free)
-- **Win**: Gaming servers, NAS, Better monitoring, Multi-cloud
-- **Tie**: Docker integration, Cost
-- **Lose**: Smaller community (for now!)
+# Run frontend tests
+cd frontend
+npm test
+```
 
-### vs. Others
-- **Better UI** than Webmin, VestaCP, CyberPanel
-- **More features** than HestiaCP
-- **Gaming capabilities** no one else has
-- **Modern stack** vs legacy panels
+## 🐳 Docker Deployment
 
-## Roadmap
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
 
-- [x] Core API framework
-- [x] Basic UI dashboard
-- [ ] Docker integration
-- [ ] Minecraft server manager
-- [ ] NAS management module
-- [ ] Advanced monitoring
-- [ ] Kubernetes support
-- [ ] Multi-cloud deployment
+# Or use the provided Dockerfile
+docker build -t artipanel:latest .
+docker run -p 3000:3000 -p 4001:4001 artipanel:latest
+```
+
+## 📚 Documentation
+
+- **[Architecture Overview](./docs/ARCHITECTURE.md)** - System design and components
+- **[Authentication Guide](./docs/AUTHENTICATION.md)** - Auth flow and security
+- **[Feature Reference](./docs/FEATURES.md)** - Detailed feature documentation
+- **[CLI Reference](./docs/CLI.md)** - Command-line interface
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Production deployment
+- **[Linux/RPi Setup](./SETUP_LINUX_RPI.md)** - Platform-specific setup
+- **[Troubleshooting](./TROUBLESHOOTING_SETUP.md)** - Common issues and fixes
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Commit changes**: `git commit -m 'Add amazing feature'`
+4. **Push to branch**: `git push origin feature/amazing-feature`
+5. **Open a Pull Request**
+
+### Development Setup
+```bash
+# Install dependencies
+npm install
+
+# Format code
+npm run format
+
+# Lint code
+npm run lint
+
+# Type check
+npm run typecheck
+```
+
+## 🐛 Issues & Support
+
+- **Found a bug?** [Open an issue](https://github.com/Ethan0892/ArtiPanel/issues)
+- **Have a question?** Check the [Discussions](https://github.com/Ethan0892/ArtiPanel/discussions)
+- **Need help?** See the [Troubleshooting guide](./TROUBLESHOOTING_SETUP.md)
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by cPanel, Plesk, Coolify, and Pterodactyl
+- Built with ❤️ for the open-source community
+- Special thanks to all contributors
+
+## 🗺️ Roadmap
+
+### v0.2.0 (Q1 2026)
+- [ ] Two-factor authentication (2FA)
+- [ ] Advanced backup encryption
+- [ ] Kubernetes support improvements
+- [ ] Email integration enhancements
+
+### v0.3.0 (Q2 2026)
 - [ ] Mobile app
-- [ ] Ansible integration
-- [ ] CI/CD pipelines
-- [ ] Machine learning predictions
+- [ ] Advanced analytics
+- [ ] Custom branding
+- [ ] API documentation portal
 
-## Authentication & Security
-
-### Pterodactyl-Style Authentication
-ArtiPanel implements a modern, user-friendly authentication system inspired by Pterodactyl:
-
-**First User Setup**:
-1. On first access, system detects no admin user exists
-2. User is prompted to **Create Admin Account** with:
-   - Username
-   - Email
-   - Password (minimum 8 characters)
-   - Password confirmation
-3. First user is automatically assigned **Admin role**
-4. System is then initialized and ready to use
-
-**Subsequent Users**:
-1. Login page appears for normal users
-2. Admins create new users through the **Users Management Dashboard** (`/users`)
-3. Admins can:
-   - Create users with specific roles (admin, user, viewer)
-   - Change user roles
-   - Deactivate or delete users
-   - View user login history
-
-**Security Features**:
-- PBKDF2 password hashing (100,000 iterations)
-- JWT tokens (24-hour access, 7-day refresh)
-- Role-based access control (Admin, User, Viewer)
-- Protected admin routes with middleware authentication
-- localStorage session persistence
-- Secure token refresh mechanism
-- **Password Reset System**: Admins can reset user passwords, users can request resets
-
-**Password Management**:
-- Forgot Password: Users can request password reset instructions
-- Admin Reset: Only admins can reset user passwords
-- Secure Hashing: All passwords use PBKDF2 with 100,000 iterations
-- See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) for complete details
-
-ArtiPanel also implements enterprise-grade security:
-- End-to-end encryption ready
-- Advanced role-based access control
-- Two-factor authentication (planned)
-- Regular security audits
-- Compliance with GDPR, HIPAA
-- DDoS protection ready
-- Firewall integration
-
-## Support & Community
-
-- **Documentation**: [docs/](./docs/)
-- **Discord**: [Community Server](#)
-- **GitHub Issues**: Bug reports & feature requests
-- **Wiki**: [Community contributions](#)
-
-## Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
-## License
-
-ArtiPanel is licensed under the **AGPL-3.0 License** - see [LICENSE](./LICENSE) file.
-
-## Why ArtiPanel Beats Competitors
-
-1. **Unified Platform**: Everything in one place (servers, games, storage, remote access)
-2. **Modern Stack**: Built with 2025 tech, not legacy code
-3. **Gaming Focus**: First panel with professional game server management
-4. **NAS Integration**: Unique storage management features
-5. **Open Source**: Community-driven, fully transparent
-6. **Cost**: Completely free (no licensing fees)
-7. **Scalability**: From single server to enterprise clusters
-8. **Developer-Friendly**: APIs for everything, plugin architecture
-
-## Benchmarks
-
-- **Dashboard Load Time**: <500ms
-- **Server Response**: <100ms (p99)
-- **Real-time Updates**: <200ms latency
-- **Memory Usage**: <300MB core panel
-- **Concurrent Users**: 1000+ on single instance
+### v1.0.0 (Q3 2026)
+- [ ] Production-ready release
+- [ ] Enterprise features
+- [ ] Commercial support options
 
 ---
 
-## ⚠️ Pre-Release Notice
-
-### v0.1.0-alpha Status
-This is an **early alpha release** with the following caveats:
-
-- **Features may be unstable** - Core functionality is implemented but not battle-tested
-- **APIs may change** - No guarantee of backward compatibility between releases
-- **Performance not optimized** - Focus has been on feature completeness, not optimization
-- **Limited testing** - Community testing and feedback is highly welcome
-- **Documentation incomplete** - Some advanced features may lack documentation
-- **Production not ready** - Do not use in production environments yet
-
-### Getting Help
-- 📖 **Documentation**: See `/docs/` folder
-- 🐛 **Report Bugs**: [GitHub Issues](https://github.com/Ethan0892/ArtiPanel/issues)
-- 💬 **Discuss Features**: [GitHub Discussions](https://github.com/Ethan0892/ArtiPanel/discussions)
-- 🤝 **Contribute**: See [CONTRIBUTING.md](./CONTRIBUTING.md)
-
-### What's Next?
-- ✅ v0.1.0-alpha: Core API, UI, Security, Gaming servers, Nodes
-- 🚧 v0.2.0-beta: Docker integration, Performance optimization, Kubernetes support
-- 🎯 v1.0.0: Stable release, Production-ready, Full documentation
-
----
-
-**ArtiPanel: The Server Panel That Does It All** 🚀
-
-Ready to shape the future of server management? Join us on [GitHub](https://github.com/Ethan0892/ArtiPanel)!
+**Made with ❤️ by [Ethan0892](https://github.com/Ethan0892)**

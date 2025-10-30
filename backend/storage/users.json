@@ -1,0 +1,15 @@
+{
+  "users": [
+    {
+      "id": "user_1c95ad53b9b080c9",
+      "username": "admin",
+      "email": "admin@artipanel.local",
+      "passwordHash": "eb0b8dd2c22fedb3d788735bd65a57913aa81384b24f3101b9ce5a018ce9ae98d977b7cdf8464a778c06686aa7a19f57cb747d56e5c89253699ffec4dcf2623d",
+      "role": "admin",
+      "createdAt": "2025-10-30T19:24:08.838Z",
+      "lastLogin": null,
+      "isActive": true
+    }
+  ],
+  "lastModified": "2025-10-30T19:24:08.840Z"
+}

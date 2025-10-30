@@ -1,13 +1,43 @@
-# ArtiPanel Documentation Index
+# ArtiPanel Documentation Hub
 
-Complete guide to ArtiPanel documentation and resources.
+Welcome to the ArtiPanel documentation! This is your one-stop resource for everything related to the ArtiPanel server management platform.
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
-- **[QUICKSTART.md](./QUICKSTART.md)** - Get up and running in 5 minutes
-- **[START_HERE.md](./START_HERE.md)** - First-time setup guide
-- **[SETUP_LINUX_RPI.md](./SETUP_LINUX_RPI.md)** - Linux/Raspberry Pi installation (permission fixes, memory optimization)
-- **[TROUBLESHOOTING_SETUP.md](./TROUBLESHOOTING_SETUP.md)** - 🆘 Having issues with fresh setup? Start here!
+### For New Users
+1. **[Quick Start Guide](./README.md)** - Get up and running in 5 minutes
+2. **[First Login Guide](#first-login)** - How to access and configure your first admin account
+3. **[Web Interface Tour](./docs/FEATURES.md)** - Overview of all features
+
+### For Developers
+1. **[Architecture Overview](./docs/ARCHITECTURE.md)** - Understand the system design
+2. **[Development Setup](./README.md#-running-the-application)** - Set up your dev environment
+3. **[API Reference](./docs/FEATURES.md)** - REST API documentation
+
+### For System Administrators
+1. **[Deployment Guide](./docs/DEPLOYMENT.md)** - Deploy to production
+2. **[Configuration Guide](#configuration)** - Environment setup
+3. **[Security Guide](./SECURITY.md)** - Hardening and best practices
+
+### For Linux/Raspberry Pi Users
+1. **[Linux/RPi Setup Guide](./SETUP_LINUX_RPI.md)** - Platform-specific installation
+2. **[Troubleshooting Guide](./TROUBLESHOOTING_SETUP.md)** - Common issues and fixes
+
+## 🔑 First Login
+
+### Default Credentials
+When you start ArtiPanel for the first time, a default admin account is automatically created:
+
+```
+Username: admin
+Password: admin123
+```
+
+### ⚠️ First Steps (IMPORTANT!)
+1. **Change the admin password immediately** in production
+2. Create additional user accounts as needed
+3. Configure your server connections
+4. Set up monitoring alerts
 
 ## 📚 Core Documentation
 
