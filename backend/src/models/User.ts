@@ -242,8 +242,9 @@ export async function initializeDefaultAdmin(): Promise<void> {
     
     // Only create default admin if no users exist
     if (users.length === 0) {
-      await createUser('admin', 'admin@artipanel.local', 'admin123', UserRole.ADMIN);
-      logger.info('✅ Default admin account created (username: admin, password: admin123)');
+      const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'admin123';
+      await createUser('admin', 'admin@artipanel.local', defaultPassword, UserRole.ADMIN);
+      logger.info(`✅ Default admin account created (username: admin, password: check .env DEFAULT_ADMIN_PASSWORD)`);
     }
   } catch (error: any) {
     logger.error('Failed to initialize default admin', error);

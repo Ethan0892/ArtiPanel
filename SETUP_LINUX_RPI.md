@@ -125,7 +125,7 @@ Environment: development
 Frontend URL: http://localhost:3000
 Version: 0.1.0-alpha.1
 ========================================
-✅ Default admin account created (username: admin, password: admin123)
+✅ Default admin account created (username: admin, check .env DEFAULT_ADMIN_PASSWORD)
 Server started successfully
 ```
 
@@ -149,7 +149,7 @@ VITE v5.x.x ready in XXX ms
 1. **Open browser**: http://localhost:3000
 2. **Login with default credentials**:
    - Username: `admin`
-   - Password: `admin123`
+   - Password: Check your `.env` file under `DEFAULT_ADMIN_PASSWORD`
 3. **Change password immediately** (click user icon → Settings)
 
 ### Verify Backend is Running

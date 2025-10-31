@@ -51,7 +51,7 @@ Once setup is complete, access ArtiPanel at:
 ```
 URL: http://localhost:3000
 Username: admin
-Password: admin123
+Password: ${DEFAULT_ADMIN_PASSWORD} (configure in backend/.env)
 ```
 
 ⚠️ **IMPORTANT**: Change the default password immediately after first login!

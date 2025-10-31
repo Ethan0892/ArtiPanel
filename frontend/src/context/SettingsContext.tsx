@@ -7,6 +7,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getSavedTheme } from '../config/themes';
+import { useAuth } from './AuthContext';
 
 export type SettingsDensity = 'comfortable' | 'compact';
 export type SettingsTheme = 'dark' | 'light' | 'system';
@@ -103,12 +104,12 @@ const defaultTheme = getSavedTheme();
 
 const defaultSettings: SettingsSchema = {
   profile: {
-    name: 'Ethan Richards',
-    email: 'ethan@artipanel.io',
-    role: 'Administrator',
-    organization: 'ArtiPanel Labs',
+    name: '',  // Will be populated from auth user
+    email: '',  // Will be populated from auth user
+    role: 'User',
+    organization: '',
     avatarColor: '#6366F1',
-    phone: '+1 (555) 010-2645',
+    phone: '',
   },
   general: {
     language: 'en',
@@ -230,6 +231,33 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
+
+  // Populate profile from authenticated user
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    if (user) {
+      // Update profile section with actual user data
+      setWorkingSettings(prev => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          name: user.username,  // Use username as display name
+          email: user.email,
+          role: user.role.charAt(0).toUpperCase() + user.role.slice(1),  // Capitalize role
+        }
+      }));
+      setPersistedSettings(prev => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          name: user.username,
+          email: user.email,
+          role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
+        }
+      }));
+    }
+  }, [user]);
 
   const updateSetting = useCallback((path: string, value: unknown) => {
     clearValidationError(path);

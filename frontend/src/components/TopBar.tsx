@@ -12,9 +12,10 @@ interface TopBarProps {
   onThemeClick: () => void;
   onSettingsClick: () => void;
   onLogout?: () => void;
+  onNavigate?: (page: string) => void;  // Added navigation callback
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout }) => {
+const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout, onNavigate }) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -488,8 +489,8 @@ const TopBar: React.FC<TopBarProps> = ({ onThemeClick, onSettingsClick, onLogout
                 </div>
               </div>
               <div className="dropdown-divider"></div>
-              <div className="dropdown-item">Profile</div>
-              <div className="dropdown-item">Account Settings</div>
+              <div className="dropdown-item" onClick={() => onNavigate?.('profile')} style={{ cursor: 'pointer' }}>Profile</div>
+              <div className="dropdown-item" onClick={() => onNavigate?.('settings-general')} style={{ cursor: 'pointer' }}>Account Settings</div>
               <div className="dropdown-item">Two-Factor Auth</div>
               <div className="dropdown-divider"></div>
               <div className="dropdown-item danger" onClick={onLogout}>

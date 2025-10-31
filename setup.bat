@@ -246,9 +246,9 @@ echo Frontend URL: http://localhost:%FRONTEND_PORT%
 echo.
 echo Default Credentials:
 echo   Username: admin
-echo   Password: admin123
+echo   Password: Configure DEFAULT_ADMIN_PASSWORD in backend\.env
 echo.
-echo [WARNING] Change the default password immediately!
+echo [WARNING] Set a strong password in backend\.env before deploying!
 echo.
 set /p START_SERVICES="Start services now? (y/n): "
 if /i "%START_SERVICES%"=="y" (

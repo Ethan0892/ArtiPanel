@@ -24,7 +24,7 @@
 - Auto-setup mode when no users exist
 - Prevents login page lockout
 - Fresh installations show setup page
-- Default admin (admin/admin123) created automatically
+- Default admin (admin/<password>) created from DEFAULT_ADMIN_PASSWORD in .env
 
 ### ✅ Configuration
 - Port flexibility (backend on 4001, frontend on 3000)
@@ -64,16 +64,16 @@ npm run dev
 ### 4. Access Application
 - **URL**: http://localhost:3000
 - **Username**: admin
-- **Password**: admin123
+- **Password**: Set via DEFAULT_ADMIN_PASSWORD in backend/.env
 
 ## 📋 Default Credentials
 
 ```
 Username: admin
-Password: admin123
+Password: ${DEFAULT_ADMIN_PASSWORD} (configure in .env)
 ```
 
-⚠️ **IMPORTANT**: Change this password immediately in production!
+⚠️ **IMPORTANT**: Configure a strong password in .env before deployment!
 
 ## 🗂️ Key Files
 
@@ -213,9 +213,9 @@ Root Directory
 
 Your ArtiPanel instance is ready to use. Start both services and login with:
 - **Username**: admin
-- **Password**: admin123
+- **Password**: Check your backend/.env DEFAULT_ADMIN_PASSWORD
 
-Remember to change the password and review security settings for production use!
+Remember to configure a strong password in .env and review security settings for production use!
 
 ---
 

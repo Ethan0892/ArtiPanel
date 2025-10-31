@@ -38,16 +38,17 @@ setup.bat
 ## 🔑 First Login
 
 ### Default Credentials
-When you start ArtiPanel for the first time, a default admin account is automatically created:
+When you start ArtiPanel for the first time, a default admin account is automatically created with credentials configured in your `.env` file (see `backend/.env.example`):
 
 ```
 Username: admin
-Password: admin123
+Password: ${DEFAULT_ADMIN_PASSWORD} (set in .env)
 ```
 
 ### ⚠️ First Steps (IMPORTANT!)
-1. **Change the admin password immediately** in production
-2. Create additional user accounts as needed
+1. **Always set a strong password** in the `.env` file under `DEFAULT_ADMIN_PASSWORD` before starting the application
+2. Change the admin password after first login
+3. Create additional user accounts as needed
 3. Configure your server connections
 4. Set up monitoring alerts
 

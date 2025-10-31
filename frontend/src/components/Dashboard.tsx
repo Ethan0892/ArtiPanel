@@ -134,6 +134,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
             onThemeClick={() => setShowThemeSelector(!showThemeSelector)}
             onSettingsClick={() => setCurrentPage('settings-general')}
             onLogout={onLogout}
+            onNavigate={(page) => setCurrentPage(page)}
           />
 
           {/* Content */}

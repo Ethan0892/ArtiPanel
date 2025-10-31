@@ -18,6 +18,10 @@ out/
 .env.*.local
 .env.production
 
+# Data directories (may contain user data or credentials)
+backend/storage/
+storage/
+
 # IDE
 .vscode/
 .idea/

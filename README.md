@@ -54,9 +54,9 @@ cd frontend && npm run dev
 The system automatically creates a default admin account:
 - **URL**: http://localhost:3000
 - **Username**: `admin`
-- **Password**: `admin123`
+- **Password**: Set via `DEFAULT_ADMIN_PASSWORD` environment variable (see `.env.example`)
 
-⚠️ **IMPORTANT**: Change this password immediately in production!
+⚠️ **IMPORTANT**: Configure a strong password via the `.env` file before deploying to production!
 
 ### Need Help?
 See **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** for detailed instructions and troubleshooting.
