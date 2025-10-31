@@ -319,4 +319,4 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ---
 
-**Made with ❤️ by [Ethan0892](https://github.com/Ethan0892)**
+**Made by [Ethan0892](https://github.com/Ethan0892)**
